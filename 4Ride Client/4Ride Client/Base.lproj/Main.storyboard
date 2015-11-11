@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8191" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8154"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="_Ride_Client" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
+                        <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" axis="vertical" alignment="top" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="ocd-xT-Xla">
+                                <rect key="frame" x="20" y="65" width="560" height="513"/>
+                                <subviews>
+                                    <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="WA3-BP-HrB">
+                                        <rect key="frame" x="0.0" y="0.0" width="560" height="477"/>
+                                        <animations/>
+                                    </mapView>
+                                    <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6jT-tZ-PyL">
+                                        <rect key="frame" x="0.0" y="483" width="560" height="30"/>
+                                        <animations/>
+                                        <state key="normal" title="Button"/>
+                                        <connections>
+                                            <action selector="requestDelegate:" destination="BYZ-38-t0r" eventType="touchUpInside" id="t2H-7y-YsD"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <animations/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="6jT-tZ-PyL" secondAttribute="trailing" id="cb2-cR-agO"/>
+                                    <constraint firstItem="6jT-tZ-PyL" firstAttribute="leading" secondItem="ocd-xT-Xla" secondAttribute="leading" id="yCH-qV-Wb7"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <animations/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="ocd-xT-Xla" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="J3Y-xy-4Ub"/>
+                            <constraint firstItem="ocd-xT-Xla" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="J8K-dP-GKt"/>
+                            <constraint firstItem="ocd-xT-Xla" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="45" id="dGH-5C-vzU"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="mapView" destination="WA3-BP-HrB" id="80N-bJ-Ase"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="390" y="355"/>
+        </scene>
+    </scenes>
+</document>
