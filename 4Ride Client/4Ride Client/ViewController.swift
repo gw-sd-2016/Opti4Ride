@@ -7,13 +7,26 @@
 //
 
 import UIKit
+import CoreLocation
 import MapKit
 import Alamofire
 import SwiftyJSON
 
-class ViewController: UIViewController{
+class ViewController: UIViewController, CLLocationManagerDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var requestButton: UIButton!
+    @IBOutlet weak var idleView: UIStackView!
+    @IBOutlet weak var activeView: UIStackView!
+    @IBOutlet weak var sliderValue: UILabel!
+    @IBOutlet weak var capacitySlider: UISlider!
+    @IBOutlet weak var addressBar: UITextField!
+    
+    var sliderValues = [UILabel]()
+    var paras = [String: String]()
+    
+    var locationManager = CLLocationManager()
+    var currentLocation: CLLocationCoordinate2D!
     
     func setDefaultRegion() {
         
@@ -27,14 +40,55 @@ class ViewController: UIViewController{
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        var message = "student"
+        let carCapacity = CGFloat(6);
+        activeView.hidden = true
         mapView.delegate = self
+        mapView.showsUserLocation = true
         setDefaultRegion();
         
-        Alamofire.request(.GET, "http://localhost:8080/4RideServlet/Servlet")
+        //initalize location manager
+        self.locationManager.requestAlwaysAuthorization() 
+        self.locationManager.requestWhenInUseAuthorization()
+        
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.delegate = self
+            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            locationManager.startUpdatingLocation()
+        }
+        
+        let labelSpacing = CGFloat((UIScreen.mainScreen().bounds.width-30)/5)
+        var xPosition = CGFloat(CGRectGetMinX(UIScreen.mainScreen().bounds)+15)
+        let labelWidth = CGFloat(10)
+        let yPosition = CGFloat(CGRectGetMidY(capacitySlider.frame))
+        
+        for var i = 0; i < 6; i++ {
+            
+            var label = UILabel(frame: CGRectMake(xPosition - labelWidth/2, (yPosition-10), labelWidth, 20))
+            label.textAlignment = NSTextAlignment.Center
+            
+            label.adjustsFontSizeToFitWidth = true
+            let index = i
+            label.text = String(index+1)
+            if(index+1 != Int(round(capacitySlider.value))) {
+                label.hidden = true
+            }
+            
+            sliderValues.append(label)
+            idleView.addSubview(label)
+            
+            xPosition += labelSpacing;
+        }
+        
+        //default location
+        currentLocation = CLLocationCoordinate2D(latitude: 38.899591, longitude: -77.049276)
+        
+        paras["DeviceType"] = "Student"
+        paras["RequestType"] = "VehicleLocations"
+        
+        Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
-                print(response)
-                print(data)
+                //print(response)
+                //print(data)
                 
                 let json = JSON(data: data!)
                 print(json)
@@ -52,18 +106,41 @@ class ViewController: UIViewController{
         }
 
     }
+    
+    @IBAction func sliderChangeAction(sender: UISlider) {
+        let capacity = round(sender.value)
+        capacitySlider.value = capacity
+        
+        for var i=0; i < 6; i++ {
+            sliderValues[i].hidden = true
+        }
+        sliderValues[Int(capacity)-1].hidden = false
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    //Actions
-    @IBAction func requestDelegate(sender: AnyObject) {
-        //request to algorithm
+    //Gets current device location
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        var locValue:CLLocationCoordinate2D = manager.location!.coordinate
+        print("locations = \(locValue.latitude) \(locValue.longitude)")
     }
     
-
+    //Vehicle Request Action
+    @IBAction func requestDelegate(sender: AnyObject) {
+        paras["RequestType"] = "Pickup"
+        paras["Address"] = addressBar.text
+        paras["Capacity"] = String(capacitySlider.value)
+        
+        Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
+            .response { request, response, data, error in
+                //print(response)
+                //print(data)
+        }
+        
+    }
 
 }
 

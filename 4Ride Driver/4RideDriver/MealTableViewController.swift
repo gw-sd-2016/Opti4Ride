@@ -38,10 +38,12 @@ class MealTableViewController: UITableViewController, CLLocationManagerDelegate 
     }
     
     func loadItinerary() {
+    
+        let paras = [
+            "DeviceType": "Driver",
+        ]
         
-        var message = "driver"
-        
-        Alamofire.request(.GET, "http://localhost:8080/4RideServlet/Servlet")
+        Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
                 print(response)
                 print(data)

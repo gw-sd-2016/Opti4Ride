@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		553325FD1BF06D8000689C14 /* Vehicle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 553325FC1BF06D8000689C14 /* Vehicle.swift */; settings = {ASSET_TAGS = (); }; };
-		553326071BF076C000689C14 /* VehicleMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 553326061BF076C000689C14 /* VehicleMapView.swift */; settings = {ASSET_TAGS = (); }; };
+		553325FD1BF06D8000689C14 /* Vehicle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 553325FC1BF06D8000689C14 /* Vehicle.swift */; };
+		553326071BF076C000689C14 /* VehicleMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 553326061BF076C000689C14 /* VehicleMapView.swift */; };
 		553392F21BC1A0D600037FC6 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 553392F11BC1A0D600037FC6 /* MapKit.framework */; };
 		553393051BC1C2AD00037FC6 /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 553392FC1BC1C1E500037FC6 /* Alamofire.framework */; };
 		553393071BC1C2AD00037FC6 /* Alamofire.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 553392FC1BC1C1E500037FC6 /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5533932E1BC1D4E700037FC6 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 553393251BC1D4CE00037FC6 /* SwiftyJSON.framework */; };
 		5533932F1BC1D4E700037FC6 /* SwiftyJSON.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 553393251BC1D4CE00037FC6 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		553B7D4E1BF1632F0068C30A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 553B7D4D1BF1632F0068C30A /* LaunchScreen.storyboard */; settings = {ASSET_TAGS = (); }; };
+		553B7D4E1BF1632F0068C30A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 553B7D4D1BF1632F0068C30A /* LaunchScreen.storyboard */; };
 		555E71A21BAF58390045000F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555E71A11BAF58390045000F /* AppDelegate.swift */; };
 		555E71A41BAF58390045000F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555E71A31BAF58390045000F /* ViewController.swift */; };
 		555E71A71BAF58390045000F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 555E71A51BAF58390045000F /* Main.storyboard */; };
@@ -150,7 +150,7 @@
 		553B7D4D1BF1632F0068C30A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = "4Ride Client/LaunchScreen.storyboard"; sourceTree = "<group>"; };
 		555E719E1BAF58390045000F /* 4Ride Client.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "4Ride Client.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		555E71A11BAF58390045000F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		555E71A31BAF58390045000F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		555E71A31BAF58390045000F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ViewController.swift; sourceTree = "<group>"; };
 		555E71A61BAF58390045000F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		555E71A91BAF58390045000F /* _Ride_Client.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = _Ride_Client.xcdatamodel; sourceTree = "<group>"; };
 		555E71AB1BAF58390045000F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };

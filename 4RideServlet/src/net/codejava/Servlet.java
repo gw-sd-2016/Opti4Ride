@@ -36,17 +36,9 @@ public class Servlet extends HttpServlet {
         locationKeyMap.put("950 25th Street NW", new double[]{38.902105, -77.053296});
         locationKeyMap.put("1957 E Street NW", new double[]{38.896026, -77.044187});
         locationKeyMap.put("1837 M Street NW", new double[]{38.905662, -77.043140});
-        locationKeyMap.put("2400 M Street NW", new double[]{38.905203, -77.051465});         
-    }
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		
-		
-		//vGraph 1
+        locationKeyMap.put("2400 M Street NW", new double[]{38.905203, -77.051465});    
+        
+      //vGraph 1
         Map<String, Integer> vG1_Claridge = new HashMap<String, Integer>();
         vG1_Claridge.put("2350 H Street NW", 3);
         vG1_Claridge.put("2135 F Street NW", 10);
@@ -96,9 +88,9 @@ public class Servlet extends HttpServlet {
         
         //Vehicles
         vehicles = new Vehicle[3];
-        vehicles[0] = new Vehicle(6, 4, "Ally Herod", new float[]{ 38.899354f, -77.048844f }, vGraph1 );
-        vehicles[1] = new Vehicle(5, 4, "Becca Stark", new float[]{ 38.900197f, -77.050110f }, vGraph2 );
-        vehicles[2] = new Vehicle(6, 2, "Matthew Gentry", new float[]{ 38.897367f, -77.045475f }, vGraph3 );
+        vehicles[0] = new Vehicle(6, 4, "Ms. Malone", new float[]{ 38.899354f, -77.048844f }, vGraph1 );
+        vehicles[1] = new Vehicle(5, 4, "Mr. Smith", new float[]{ 38.900197f, -77.050110f }, vGraph2 );
+        vehicles[2] = new Vehicle(6, 2, "Mr. Dillard", new float[]{ 38.897367f, -77.045475f }, vGraph3 );
         
         Map<String, double[]> itinerary1 = new HashMap<String, double[]>();
         itinerary1.put("2350 H Street NW", locationKeyMap.get("2350 H Street NW"));
@@ -117,7 +109,15 @@ public class Servlet extends HttpServlet {
         itinerary3.put("950 25th Street NW", locationKeyMap.get("950 25th Street NW"));
         itinerary3.put("1957 E Street NW", locationKeyMap.get("1957 E Street NW"));
         vehicles[2].setItinerary(itinerary3);
-        
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub  
+		
+		System.out.println(request);
         
         PrintWriter out = response.getWriter();
         
@@ -131,5 +131,54 @@ public class Servlet extends HttpServlet {
         out.print(vAssignment);
         
 	}
+	
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		System.out.println(request);
+        
+        PrintWriter out = response.getWriter();
+        
+        String deviceType = request.getParameterValues("DeviceType")[0];
+        System.out.println(deviceType);
+        
+        if(deviceType.equals("Student")) {
+        	
+            String requestType = request.getParameterValues("RequestType")[0];
+            System.out.println(requestType);
+            
+        	if(requestType.equals("Pickup")) {
+        		Map<String, double[]> itinerary;
+        		//optimalTour(vehicles[0].getGraph().size(), vehecles[0].getGraph(), itinerary);
+        		
+        	}
+        	else if(requestType.equals("VehicleLocations")) {   	
+        		ObjectMapper mapper = new ObjectMapper();
+        		String vAssignment = mapper.writeValueAsString(vehicles);
+        		out.print(vAssignment);  
+        	}
+        }
+        else if (deviceType.equals("Driver")) {
+            ObjectMapper mapper = new ObjectMapper();
+            String vAssignment = mapper.writeValueAsString(vehicles);
+            out.print(vAssignment);
+        }
+       
+    }
+	
+	/*
+	protected void optimalTour(int n, Map<String, Map<String, Integer>> weights, Map<String, Map<String, Integer>> path) {
+		Map<Integer, Map<String, Integer>> distances = new HashMap<Integer, Map<String, Integer>>();
+		
+		for(int i=0; i<=n; i++) {
+			D.put(i, null) = weights.get(weights.keySet()[i]).get(weights.keySet()[i]);
+			for(int k=0; k <=(n-2); k++) {
+				for(int j=0; j <=n; j++) {
+						D.put(i, weights.keySet()) = weights.get(weights.keySet()[i]).get(weights.get(weights.keySet()[i]).keySet()[j]);
+						P.put(i, weights.keySet()) = j);
+				}		
+			}
+		}
+		
+	}
+	*/
 
 }
