@@ -2,6 +2,9 @@ package net.codejava;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 import javax.servlet.ServletException;
@@ -11,8 +14,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Servlet implementation class Servlet
@@ -146,6 +151,18 @@ public class Servlet extends HttpServlet {
             System.out.println(requestType);
             
         	if(requestType.equals("Pickup")) {
+        		
+        		String Start = request.getParameterValues("Start")[0];
+        		String Destination = request.getParameterValues("Destination")[0];
+        		String Passangers = request.getParameterValues("Passangers")[0];
+        		
+        		//for each vehicle, add current location to graph (driver app sends location as parameter in pickup request)
+        		
+        		//for each vehicle, determine weights to each node (complete graph)
+        		
+        		//for each vehicle, insert node (with weights) into graph 
+        		
+        		//for each vehicle, compute optimal tour given new request       		
         		Map<String, double[]> itinerary;
         		//optimalTour(vehicles[0].getGraph().size(), vehecles[0].getGraph(), itinerary);
         		
@@ -164,21 +181,129 @@ public class Servlet extends HttpServlet {
        
     }
 	
-	/*
-	protected void optimalTour(int n, Map<String, Map<String, Integer>> weights, Map<String, Map<String, Integer>> path) {
-		Map<Integer, Map<String, Integer>> distances = new HashMap<Integer, Map<String, Integer>>();
+	
+	protected static void optimalTour(int n, Map<String, Map<String, Integer>> weights, Map<String, Map<String[], String>> paths) {
 		
-		for(int i=0; i<=n; i++) {
-			D.put(i, null) = weights.get(weights.keySet()[i]).get(weights.keySet()[i]);
-			for(int k=0; k <=(n-2); k++) {
-				for(int j=0; j <=n; j++) {
-						D.put(i, weights.keySet()) = weights.get(weights.keySet()[i]).get(weights.get(weights.keySet()[i]).keySet()[j]);
-						P.put(i, weights.keySet()) = j);
-				}		
+		//check for all nodes in WEIGHTS, there is only ONE key value pair
+		//check for all nodes in PATH, there is 2^n key value pairs
+	
+		ArrayList<String> nodesList = new ArrayList<String>(weights.keySet()); 
+		Collections.sort(nodesList);
+		//System.out.println(nodesList);
+		String[] nodes = nodesList.toArray(new String[weights.keySet().size()]);
+		
+		//vMinusV1AsList initialized as subsets V - {v(1)} as String[]
+		//vMinusV1AsString initialized as subsets V - {v(1)} as string	
+		
+		ArrayList<String[]> vMinusV1AsList = new ArrayList<String[]>();
+		Map<String, Integer> vMinusV1AsString = new HashMap<String, Integer>();
+		Map<String, Map<String, Integer>> D = new HashMap<String, Map<String, Integer>>();
+		
+		for(int i=(int)(Math.pow(2, nodes.length)-1); i>=0; i--) {
+			int binaryNum = i;
+			//System.out.println(Integer.toBinaryString(n));
+			ArrayList<String> subset = new ArrayList<String>();
+			int counter = 0;
+			while(binaryNum > 0 || counter < nodes.length) {
+				if(binaryNum % 2 == 0)
+					subset.add(nodes[(nodes.length-1)-counter]);
+				binaryNum = binaryNum >> 1;
+				counter++;
+			}
+			if(!(subset.contains(nodes[0]) && subset.size() == 1)) {
+				Collections.sort(subset);
+				vMinusV1AsList.add(subset.toArray(new String[subset.size()]));
+				vMinusV1AsString.put(Arrays.toString(subset.toArray(new String[subset.size()])), -1);
+				//System.out.println(Arrays.toString(subset.toArray(new String[subset.size()])));
+			}
+			/*
+			for(int z=0; z<subset.size(); z++) {
+				System.out.print(subset.toArray(new String[subset.size()])[z] + " ");
+			}
+			System.out.println("");
+			*/
+		}
+		
+		//D initialized with v(1)-v(n) and subsets V - {v(1)}	
+		for(int i=1; i<n; i++) 
+		{		
+			Map<String, Integer> vSet = new HashMap<String, Integer>();
+			vSet.putAll(vMinusV1AsString);
+			D.put(nodes[i], vSet);
+		}			
+		//System.out.println(D.get("B").get("[C]"));
+		
+		//D[i][emptySet] = W[i][0]
+		for(int i=1; i<n; i++) 			
+			D.get(nodes[i]).put(Arrays.toString(new String[0]), weights.get(nodes[i]).get(nodes[0]));
+		
+		//System.out.println(D.get(nodes[1]).get(Arrays.toString(new String[0])));
+		
+		for(int k=1; k<=(n-2); k++) 
+		{
+			for( String[] A : vMinusV1AsList ) 
+			{
+				if(A.length == k) 
+				{	
+					ArrayList<String> aAsList = new ArrayList<String>(Arrays.asList(A));
+					for(int i=0; i<nodes.length;i++) 
+					{
+						if(i != 0 && !aAsList.contains(nodes[i])) 
+						{
+							int dVal = Integer.MAX_VALUE;
+							String dValIndex = "";
+							System.out.println(aAsList);
+							for(int j=0; j<aAsList.size();j++) 
+							{
+								aAsList.remove(nodes[j]);
+								String[] aMinusJ = aAsList.toArray(new String[aAsList.size()]);
+								
+								int tempVal;
+								System.out.println(D.get(nodes[j]));
+								if((tempVal = weights.get(nodes[i]).get(nodes[j]) + D.get(nodes[j]).get(Arrays.toString(aMinusJ))) < dVal)
+								{
+									dVal = tempVal;
+									dValIndex = nodes[j];
+								}
+								aAsList.add(nodes[j]);
+								Collections.sort(aAsList);
+							}
+							D.get(nodes[i]).put(Arrays.toString(A), dVal);
+							paths.get(nodes[i]).put(A, dValIndex);
+						}
+					}
+				}
 			}
 		}
 		
+		int dVal = Integer.MAX_VALUE;
+		String dValIndex = "";
+		ArrayList<String> nodesAsList = new ArrayList<String>(Arrays.asList(nodes));
+		nodesAsList.remove(nodes[0]);
+		for(int j=1; j<nodes.length;j++) 
+		{
+			nodesAsList.remove(nodes[j]);
+			String[] nodesMinus1J = (String[])nodesAsList.toArray(new String[nodes.length-2]);
+			//System.out.println(D.get("B").get("[C]"));
+
+			
+			int tempVal;
+			if((tempVal = (weights.get(nodes[0]).get(nodes[j]) + D.get(nodes[j]).get(Arrays.toString(nodesMinus1J)))) < dVal)
+			{
+				dVal = tempVal;
+				dValIndex = nodes[j];
+			}
+			nodesAsList.add(nodes[j]);
+			Collections.sort(nodesAsList);
+			System.out.println( weights.get(nodes[0]).get(nodes[j]) );
+		}
+		System.out.println(dVal);
+		//D.get(nodes[0]).put(Arrays.toString(nodes), dVal);
+		paths.get(nodes[0]).put(nodes, dValIndex);
+		
+		
+		
 	}
-	*/
+	
 
 }
