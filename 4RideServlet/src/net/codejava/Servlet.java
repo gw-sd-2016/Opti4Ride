@@ -14,6 +14,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.maps.GeoApiContext;
+import com.google.maps.GeocodingApi;
+import com.google.maps.GeocodingApiRequest;
+import com.google.maps.model.GeocodingResult;
+import com.google.maps.model.LatLng;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 import java.util.Map;
@@ -131,6 +136,19 @@ public class Servlet extends HttpServlet {
         //response.setContentType("application/json");
         //out = response.getWriter();
         
+     // Replace the API key below with a valid API key.
+        GeoApiContext context = new GeoApiContext().setApiKey("AIzaSyCCi0xwG4nVccFDw5vTzkO_402Lg8CyGW4");
+        GeocodingResult[] results = null;
+		try {
+			LatLng CA = new LatLng(37.4220355, -122.0841244);
+			results = GeocodingApi.reverseGeocode(context, CA).await();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        //System.out.println("(" + results[0].geometry.location.lat + "," + results[0].geometry.location.lng + ")");
+		System.out.println(results[0].formattedAddress);
+		
         ObjectMapper mapper = new ObjectMapper();
         String vAssignment = mapper.writeValueAsString(vehicles);
         out.print(vAssignment);
@@ -182,14 +200,13 @@ public class Servlet extends HttpServlet {
     }
 	
 	
-	protected static void optimalTour(int n, Map<String, Map<String, Integer>> weights, Map<String, Map<String[], String>> paths) {
+protected static void optimalTour(int n, Map<String, Map<String, Integer>> weights, Map<String, Map<String, String>> paths) {
 		
 		//check for all nodes in WEIGHTS, there is only ONE key value pair
 		//check for all nodes in PATH, there is 2^n key value pairs
 	
 		ArrayList<String> nodesList = new ArrayList<String>(weights.keySet()); 
 		Collections.sort(nodesList);
-		//System.out.println(nodesList);
 		String[] nodes = nodesList.toArray(new String[weights.keySet().size()]);
 		
 		//vMinusV1AsList initialized as subsets V - {v(1)} as String[]
@@ -201,7 +218,6 @@ public class Servlet extends HttpServlet {
 		
 		for(int i=(int)(Math.pow(2, nodes.length)-1); i>=0; i--) {
 			int binaryNum = i;
-			//System.out.println(Integer.toBinaryString(n));
 			ArrayList<String> subset = new ArrayList<String>();
 			int counter = 0;
 			while(binaryNum > 0 || counter < nodes.length) {
@@ -214,14 +230,7 @@ public class Servlet extends HttpServlet {
 				Collections.sort(subset);
 				vMinusV1AsList.add(subset.toArray(new String[subset.size()]));
 				vMinusV1AsString.put(Arrays.toString(subset.toArray(new String[subset.size()])), -1);
-				//System.out.println(Arrays.toString(subset.toArray(new String[subset.size()])));
 			}
-			/*
-			for(int z=0; z<subset.size(); z++) {
-				System.out.print(subset.toArray(new String[subset.size()])[z] + " ");
-			}
-			System.out.println("");
-			*/
 		}
 		
 		//D initialized with v(1)-v(n) and subsets V - {v(1)}	
@@ -230,46 +239,56 @@ public class Servlet extends HttpServlet {
 			Map<String, Integer> vSet = new HashMap<String, Integer>();
 			vSet.putAll(vMinusV1AsString);
 			D.put(nodes[i], vSet);
-		}			
-		//System.out.println(D.get("B").get("[C]"));
+		}	
 		
 		//D[i][emptySet] = W[i][0]
 		for(int i=1; i<n; i++) 			
 			D.get(nodes[i]).put(Arrays.toString(new String[0]), weights.get(nodes[i]).get(nodes[0]));
 		
-		//System.out.println(D.get(nodes[1]).get(Arrays.toString(new String[0])));
-		
 		for(int k=1; k<=(n-2); k++) 
 		{
+			System.out.println("k="+k);
 			for( String[] A : vMinusV1AsList ) 
 			{
-				if(A.length == k) 
+				ArrayList<String> aAsList = new ArrayList<String>(Arrays.asList(A));
+				if(A.length == k && !aAsList.contains(nodes[0])) 
 				{	
-					ArrayList<String> aAsList = new ArrayList<String>(Arrays.asList(A));
+					System.out.println(new ArrayList<String>(Arrays.asList(A)));
 					for(int i=0; i<nodes.length;i++) 
 					{
+						//can just get rid of i=0 in loop...
 						if(i != 0 && !aAsList.contains(nodes[i])) 
 						{
+							System.out.println("i=" + i);
 							int dVal = Integer.MAX_VALUE;
 							String dValIndex = "";
 							System.out.println(aAsList);
-							for(int j=0; j<aAsList.size();j++) 
+							for(int j=0; j<nodes.length;j++) 
 							{
-								aAsList.remove(nodes[j]);
-								String[] aMinusJ = aAsList.toArray(new String[aAsList.size()]);
-								
-								int tempVal;
-								System.out.println(D.get(nodes[j]));
-								if((tempVal = weights.get(nodes[i]).get(nodes[j]) + D.get(nodes[j]).get(Arrays.toString(aMinusJ))) < dVal)
+								if(aAsList.contains(nodes[j]))
 								{
-									dVal = tempVal;
-									dValIndex = nodes[j];
+									System.out.println("j=" + j);
+									System.out.println("current A: " + aAsList);
+									aAsList.remove(nodes[j]);
+									String[] aMinusJ = aAsList.toArray(new String[aAsList.size()]);
+								
+									int tempVal;
+									System.out.println("current A-vj: " + aAsList);
+									System.out.println(weights.get(nodes[i]).get(nodes[j]));
+									System.out.println(D.get(nodes[j]).get(Arrays.toString(aMinusJ)));
+									if((tempVal = weights.get(nodes[i]).get(nodes[j]) + D.get(nodes[j]).get(Arrays.toString(aMinusJ))) <= dVal)
+									{
+										dVal = tempVal;
+										dValIndex = nodes[j];
+									}
+									aAsList.add(nodes[j]);
+									Collections.sort(aAsList);
 								}
-								aAsList.add(nodes[j]);
-								Collections.sort(aAsList);
 							}
 							D.get(nodes[i]).put(Arrays.toString(A), dVal);
-							paths.get(nodes[i]).put(A, dValIndex);
+							paths.get(nodes[i]).put(Arrays.toString(A), dValIndex);
+							System.out.println("P[" + nodes[i] + "][" + Arrays.toString(A) +"] = " + dValIndex);
+							System.out.println(paths.get(nodes[i]).get(Arrays.toString(A)));
 						}
 					}
 				}
@@ -284,7 +303,6 @@ public class Servlet extends HttpServlet {
 		{
 			nodesAsList.remove(nodes[j]);
 			String[] nodesMinus1J = (String[])nodesAsList.toArray(new String[nodes.length-2]);
-			//System.out.println(D.get("B").get("[C]"));
 
 			
 			int tempVal;
@@ -295,14 +313,36 @@ public class Servlet extends HttpServlet {
 			}
 			nodesAsList.add(nodes[j]);
 			Collections.sort(nodesAsList);
-			System.out.println( weights.get(nodes[0]).get(nodes[j]) );
 		}
-		System.out.println(dVal);
-		//D.get(nodes[0]).put(Arrays.toString(nodes), dVal);
-		paths.get(nodes[0]).put(nodes, dValIndex);
+		nodesList.remove(nodes[0]);
+		String[] nodesMinusV1 = nodesList.toArray(new String[nodesList.size()]);
+		D.put(nodes[0], new HashMap<String, Integer>());
+		D.get(nodes[0]).put(Arrays.toString(nodesMinusV1), dVal);
+		
+		paths.get(nodes[0]).put(Arrays.toString(nodesMinusV1), dValIndex);
+		System.out.println(D.get(nodes[0]).get(Arrays.toString(nodesMinusV1)));
 		
 		
 		
+	}
+
+	protected static void printOptimalTour(Map<String, Map<String, String>> paths) {
+	
+		ArrayList<String> nodesList = new ArrayList<String>(paths.keySet()); 
+		Collections.sort(nodesList);
+		
+		String currentNode = nodesList.get(0);
+		String v1 = currentNode;
+		System.out.println(v1);
+		nodesList.remove(currentNode);
+		while(nodesList.isEmpty() != true) {
+			String nextNode = paths.get(currentNode).get(Arrays.toString(nodesList.toArray(new String[nodesList.size()])));
+			System.out.println(nextNode);
+			nodesList.remove(nextNode);
+			Collections.sort(nodesList);
+			currentNode = nextNode;
+		}
+		System.out.println(v1);
 	}
 	
 
