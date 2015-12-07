@@ -11,10 +11,11 @@ public class Vehicle {
 	private int currentCapacity;
 	private String driverName;
 	private float[] location;
+	private Map<String, Integer> priorities;
 	private Map<String, Map<String, Integer>> adjacencyList;
-	private Map<String, double[]> optimalTour;
+	private String[] itinerary;
 	
-	public Vehicle(int cap, int currentCap, String dName, float[] loc, Map<String, Map<String, Integer>> adjList) {
+	public Vehicle(int cap, int currentCap, String dName, float[] loc, Map<String, Integer> priors, Map<String, Map<String, Integer>> adjList) {
 		this.capacity = cap;
 		this.currentCapacity = currentCap;
 		this.driverName = dName;
@@ -23,6 +24,8 @@ public class Vehicle {
 	        throw new IllegalArgumentException("Location argument must be of size 2.");
 	    else
 	    	this.location = loc;
+	    
+	    this.priorities = priors;
 	    
 	    if(!isComplete(adjList))
 	    	throw new IllegalArgumentException("Adjacency list must represent a complete graph.");
@@ -72,17 +75,30 @@ public class Vehicle {
 		return this.adjacencyList;
 	}
 	
-	public boolean setItinerary(Map<String, double[]> optiTour) {
-	    if(optiTour.isEmpty())
+	public boolean setItinerary(String[] it) {
+	    if(it == null || (it != null && it[0] == null))
 	    	return false;
 	    else {
-	    	this.optimalTour = optiTour;
+	    	this.itinerary = it;
 	    	return true;
 	    }
 	}
 	
-	public Map<String, double[]> getItinerary() {
-		return this.optimalTour;
+	public String[] getItinerary() {
+		return this.itinerary;
+	}
+	
+	public boolean setPriority(String key, Integer value) {
+	    if(key == null || value < 0)
+	    	return false;
+	    else {
+	    	this.priorities.put(key, value);
+	    	return true;
+	    }
+	}
+	
+	public Map<String, Integer> getPriorities() {
+		return this.priorities;
 	}
 	
 	public boolean setLocation(float[] loc) {

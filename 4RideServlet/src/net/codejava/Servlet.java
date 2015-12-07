@@ -27,6 +27,7 @@ import com.google.maps.model.LatLng;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -76,6 +77,11 @@ public class Servlet extends HttpServlet {
         vGraph1.put("2350 H Street NW, Washington, DC 20052, USA", vG1_Amsterdam);
         vGraph1.put("2135 F Street NW, Washington, DC 20037, USA", vG1_South);
         
+        Map<String, Integer> vP1 = new HashMap<String, Integer>();
+        vP1.put("950 25th Street NW, Washington, DC 20037, USA", 1);
+        vP1.put("2350 H Street NW, Washington, DC 20052, USA", 2);
+        vP1.put("2135 F Street NW, Washington, DC 20037, USA", 2);
+        
         //vGraph 2
         Map<String, Integer> vG2_2400M = new HashMap<String, Integer>();
         vG2_2400M.put("1957 E Street NW, Washington, DC 20052, USA", 20);
@@ -91,6 +97,11 @@ public class Servlet extends HttpServlet {
         vGraph2.put("2400 M Street NW, Washington, DC 20037, USA", vG2_2400M);
         vGraph2.put("1957 E Street NW, Washington, DC 20052, USA", vG2_EStreet);
         vGraph2.put("1837 M Street NW, Washington, DC 20036, USA", vG2_ChipotleOnM);
+        
+        Map<String, Integer> vP2 = new HashMap<String, Integer>();
+        vP2.put("2400 M Street NW, Washington, DC 20037, USA", 1);
+        vP2.put("1957 E Street NW, Washington, DC 20052, USA", 2);
+        vP2.put("1837 M Street NW, Washington, DC 20036, USA", 2);
         
         //vGraph 3
         Map<String, Integer> vG3_Claridge = new HashMap<String, Integer>();
@@ -108,28 +119,30 @@ public class Servlet extends HttpServlet {
         vGraph3.put("1957 E Street NW, Washington, DC 20052, USA", vG3_EStreet);
         vGraph3.put("2135 F Street NW, Washington, DC 20037, USA", vG3_South);
         
+        Map<String, Integer> vP3 = new HashMap<String, Integer>();
+        vP3.put("950 25th Street NW, Washington, DC 20037, USA", 1);
+        vP3.put("1957 E Street NW, Washington, DC 20052, USA", 2);
+        vP3.put("2135 F Street NW, Washington, DC 20037, USA", 2);
+        
         //Vehicles
         vehicles = new Vehicle[3];
-        vehicles[0] = new Vehicle(6, 4, "Ms. Malone", new float[]{ 38.899354f, -77.048844f }, vGraph1 );
-        vehicles[1] = new Vehicle(5, 4, "Mr. Smith", new float[]{ 38.900197f, -77.050110f }, vGraph2 );
-        vehicles[2] = new Vehicle(6, 2, "Mr. Dillard", new float[]{ 38.897367f, -77.045475f }, vGraph3 );
+        vehicles[0] = new Vehicle(6, 4, "Ms. Malone", new float[]{ 38.899354f, -77.048844f }, vP1, vGraph1 );
+        vehicles[1] = new Vehicle(5, 4, "Mr. Smith", new float[]{ 38.900197f, -77.050110f }, vP2, vGraph2 );
+        vehicles[2] = new Vehicle(6, 2, "Mr. Dillard", new float[]{ 38.897367f, -77.045475f }, vP3, vGraph3 );
         
-        Map<String, double[]> itinerary1 = new HashMap<String, double[]>();
-        itinerary1.put("2350 H Street NW, Washington, DC 20052, USA", locationKeyMap.get("2350 H Street NW, Washington, DC 20052, USA"));
-        itinerary1.put("2135 F Street NW, Washington, DC 20037, USA", locationKeyMap.get("2135 F Street NW, Washington, DC 20037, USA"));
-        itinerary1.put("950 25th Street NW, Washington, DC 20037, USA", locationKeyMap.get("950 25th Street NW, Washington, DC 20037, USA"));
+        String[] itinerary1 = { "2350 H Street NW, Washington, DC 20052, USA", 
+        						"2135 F Street NW, Washington, DC 20037, USA", 
+        						"950 25th Street NW, Washington, DC 20037, USA" };
         vehicles[0].setItinerary(itinerary1);
         
-        Map<String, double[]> itinerary2 = new HashMap<String, double[]>();
-        itinerary2.put("1957 E Street NW, Washington, DC 20052, USA", locationKeyMap.get("1957 E Street NW, Washington, DC 20052, USA"));
-        itinerary2.put("1837 M Street NW, Washington, DC 20036, USA", locationKeyMap.get("1837 M Street NW, Washington, DC 20036, USA"));
-        itinerary2.put("2400 M Street NW, Washington, DC 20037, USA", locationKeyMap.get("2400 M Street NW, Washington, DC 20037, USA")); 
+        String[] itinerary2 = { "1957 E Street NW, Washington, DC 20052, USA", 
+        						"1837 M Street NW, Washington, DC 20036, USA", 
+        						"2400 M Street NW, Washington, DC 20037, USA", };
         vehicles[1].setItinerary(itinerary2);
         
-        Map<String, double[]> itinerary3 = new HashMap<String, double[]>();
-        itinerary3.put("2135 F Street NW, Washington, DC 20037, USA", locationKeyMap.get("2135 F Street NW, Washington, DC 20037, USA"));
-        itinerary3.put("950 25th Street NW, Washington, DC 20037, USA", locationKeyMap.get("950 25th Street NW, Washington, DC 20037, USA"));
-        itinerary3.put("1957 E Street NW, Washington, DC 20052, USA", locationKeyMap.get("1957 E Street NW, Washington, DC 20052, USA"));
+        String[] itinerary3 = { "2135 F Street NW, Washington, DC 20037, USA", 
+        						"950 25th Street NW, Washington, DC 20037, USA", 
+        						"1957 E Street NW, Washington, DC 20052, USA" };
         vehicles[2].setItinerary(itinerary3);
     }
 
@@ -148,6 +161,7 @@ public class Servlet extends HttpServlet {
         //response.setContentType("application/json");
         //out = response.getWriter();
         
+        /*
 		try {
 			LatLng CA = new LatLng(37.4220355, -122.0841244);
 			results = GeocodingApi.reverseGeocode(context, CA).await();
@@ -157,6 +171,7 @@ public class Servlet extends HttpServlet {
 		}
         //System.out.println("(" + results[0].geometry.location.lat + "," + results[0].geometry.location.lng + ")");
 		System.out.println(results[0].formattedAddress);
+		*/
 		
         ObjectMapper mapper = new ObjectMapper();
         String vAssignment = mapper.writeValueAsString(vehicles);
@@ -203,7 +218,7 @@ public class Servlet extends HttpServlet {
         	}
         }
         else if (deviceType.equals("Driver")) {
-            String vAssignment = mapper.writeValueAsString(vehicles);
+            String vAssignment = mapper.writeValueAsString(vehicles[0]);
             out.print(vAssignment);
         }
        
@@ -221,14 +236,16 @@ public class Servlet extends HttpServlet {
 		catch (Exception e) { e.printStackTrace(); }
 		
 		String originAddress = results[0].formattedAddress;
+		GeocodingResult[] results2 = null;
 		
 		try 
 		{
-			results = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(destinationCoords[0]), Float.parseFloat(destinationCoords[1]))).await();
+			results2 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(destinationCoords[0]), Float.parseFloat(destinationCoords[1]))).await();
 		} 
 		catch (Exception e) { e.printStackTrace(); }
 		
-		String destinationAddress = results[0].formattedAddress;
+		String destinationAddress = results2[0].formattedAddress;
+		System.out.println(destinationAddress);
 		
 		//IMPLEMENT for each vehicle, add current location to graph (driver app sends location as parameter in pickup request)
 		
@@ -247,6 +264,16 @@ public class Servlet extends HttpServlet {
 			allLocs[allLocs.length-2] = originAddress;
 			allLocs[allLocs.length-1] = destinationAddress;
 			
+			//get priority value of new node
+			int newPriority = -1;
+			Entry<String, Integer> maxPriority = null;
+			for(Entry<String,Integer> entry : v.getPriorities().entrySet()) {
+			    if (maxPriority == null || entry.getValue() > maxPriority.getValue())
+			    	maxPriority = entry;
+			}
+			newPriority = maxPriority.getValue() + 1;
+			
+			//get distances of node to all other nodes
 			DistanceMatrix distancesFromMatrix = null;
 			DistanceMatrix distancesToMatrix = null;
 
@@ -266,8 +293,12 @@ public class Servlet extends HttpServlet {
     			newNodes.add(new HashMap<String, Integer>());
     			elements = rows[i].elements;
     			for(int j=0; j<elements.length; j++) {
-    				if(!newLocs[i].equals(allLocs[j]))
-    					newNodes.get(i).put(allLocs[j], (int)(0.25*(elements[j].distance.inMeters/1000) + 0.75*(10)));
+    				if(!newLocs[i].equals(allLocs[j])) {
+    					if(v.getPriorities().get(allLocs[j]) == null)
+    						newNodes.get(i).put(allLocs[j], (int)(0.25*(elements[j].distance.inMeters/1000) + 0.75*(10-newPriority)));
+    					else
+    						newNodes.get(i).put(allLocs[j], (int)(0.25*(elements[j].distance.inMeters/1000) + 0.75*(10-v.getPriorities().get(allLocs[j]))));
+    				}
     			}
     			graph.put(newLocs[i], newNodes.get(i));
     		}
@@ -277,7 +308,7 @@ public class Servlet extends HttpServlet {
     			newNodes.add(new HashMap<String, Integer>());
     			elements = rows[i].elements;
     			for(int j=0; j<elements.length; j++)	
-    				graph.get(itineraryLocs[i]).put(newLocs[j], (int)(0.25*(elements[j].distance.inMeters/1000) + 0.75*(10)));
+    				graph.get(itineraryLocs[i]).put(newLocs[j], (int)(0.25*(elements[j].distance.inMeters/1000) + 0.75*(10-newPriority)));
 
     		}
     		
@@ -320,6 +351,17 @@ public class Servlet extends HttpServlet {
 	    			itinerary = it;
 	    			vehicleAssignment = i;
 	    			vehicles[i].addPassengers(passengers);
+	    			
+	    			//set node's priority for vehicle
+	    			int newPriority = -1;
+	    			Entry<String, Integer> maxPriority = null;
+	    			for(Entry<String,Integer> entry : vehicles[i].getPriorities().entrySet()) {
+	    			    if (maxPriority == null || entry.getValue() > maxPriority.getValue())
+	    			    	maxPriority = entry;
+	    			}
+	    			newPriority = maxPriority.getValue() + 1;
+	    			vehicles[i].setPriority(originAddress, newPriority);
+	    			vehicles[i].setPriority(destinationAddress, newPriority);
 	    			break;
     			}
     			else {

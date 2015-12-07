@@ -16,28 +16,31 @@ class MealTableViewController: UITableViewController, CLLocationManagerDelegate 
     // MARK: Properties
     
     var meals = [Meal]()
-    var locationManager: CLLocationManager!
-    var currentLocation: CLLocationCoordinate2D!
+    let locationManager = CLLocationManager()
+    var currentLocation = CLLocationCoordinate2D()
     @IBOutlet var distanceReading: UITableView!
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        locationManager = CLLocationManager()
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
-
-        //default location
-        currentLocation = CLLocationCoordinate2D(latitude: 38.899591, longitude: -77.049276)
+        self.locationManager.delegate = self
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        self.locationManager.requestWhenInUseAuthorization()
+        self.locationManager.startUpdatingLocation()
         
-        // Load the sample data.
         loadItinerary()
+        var timer = NSTimer.scheduledTimerWithTimeInterval(10, target: self, selector: "itineraryUpdate", userInfo: nil, repeats: true)
+    }
+    
+    func itineraryUpdate() {
+        
+      loadItinerary()
     }
     
     func loadItinerary() {
+        
+        self.meals = [Meal]()
     
         let paras = [
             "DeviceType": "Driver",
@@ -45,23 +48,44 @@ class MealTableViewController: UITableViewController, CLLocationManagerDelegate 
         
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
-                print(response)
-                print(data)
+                //print(response)
+                //print(data)
                 
                 let json = JSON(data: data!)
-                print(json)
+                print(json["itinerary"])
                 
                 
-                for (key, subJson) in json[0]["itinerary"] {
-                    let meal = Meal(photo: UIImage(named: "defaultPhoto")!,
-                        address: key,
-                        location: CLLocationCoordinate2D(latitude: subJson[0].doubleValue, longitude: subJson[1].doubleValue))!
+                let itinerary = json["itinerary"].array
+                
+                for var index=0; index<3; index++ {
                     
+                    let destinationAddress = itinerary![index]
+                    var destinationCoords = CLLocationCoordinate2D()
                     
-                    self.meals.append(meal)
+                    CLGeocoder().geocodeAddressString(String(destinationAddress)) { (placemark, error) -> Void in
+                        
+                        if error != nil
+                        {
+                            print("Error: " + error!.localizedDescription, terminator: "\n")
+                            return
+                        }
+                        
+                        if placemark!.count > 0
+                        {
+                            let pm = placemark![0] as! CLPlacemark
+                            destinationCoords = CLLocationCoordinate2D(latitude: pm.location!.coordinate.latitude, longitude: pm.location!.coordinate.longitude)
+                        }
+                        
+                        let addressArray = String(destinationAddress).componentsSeparatedByString(",")
+
+                        let meal = Meal(photo: UIImage(named: "defaultPhoto")!,
+                            address: String(addressArray[0]),
+                            location: destinationCoords)
+                
+                        self.meals.append(meal!)
+                        self.tableView.reloadData()
+                    }
                 }
-                
-                self.tableView.reloadData()
         }
         
     }
@@ -93,14 +117,20 @@ class MealTableViewController: UITableViewController, CLLocationManagerDelegate 
         cell.photoImageView.image = meal.photo
         cell.distance.text = distanceTo(meal.location)
         
+        //cell.backgroundColor = UIColor.greenColor()
+        
         return cell
     }
     
+    //LocationUpdater
     func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let location = locations.last as CLLocation!
-        let currentLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-        //print(location.coordinate.latitude)
-        //print(location.coordinate.longitude)
+        
+        let location = locations.last
+        self.currentLocation = CLLocationCoordinate2DMake(location!.coordinate.latitude, location!.coordinate.longitude)
+        //print("current location")
+        //print(location!.coordinate.latitude)
+        //print(location!.coordinate.longitude)
+        
     }
     
     func distanceTo(location: CLLocationCoordinate2D) -> String {

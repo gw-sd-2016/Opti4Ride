@@ -220,54 +220,53 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             if placemark!.count > 0
             {
                 let pm = placemark![0] as! CLPlacemark
-                print(pm.location!.coordinate.longitude)
                 destination = CLLocationCoordinate2D(latitude: pm.location!.coordinate.latitude, longitude: pm.location!.coordinate.longitude)
             }
             
+            let paras = [
+                "DeviceType": "Student",
+                "RequestType": "Pickup",
+                "Origin": String(origin.latitude) + " " + String(origin.longitude),
+                "Destination": String(destination.latitude) + " " + String(destination.longitude),
+                "Passengers": String(passengers)
+            ]
+            
+            print("sent destination:")
+            print(String(destination.latitude) + " " + String(destination.longitude))
+            
+            Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
+                .response { request, response, data, error in
+                    //print(response)
+                    //print(data)
+                    
+                    let json = JSON(data: data!)
+                    
+                    if(data == "max_capacity") {
+                        //alert user MAX CAPACITY
+                        //UIAlert
+                    }
+                    else {
+                        self.removeAllAnnotations()
+                        self.mapView.delegate = self
+                        
+                        
+                        let assignment = Vehicle(title: json["driverName"].string!,
+                            capacity: json["capacity"].intValue,
+                            currentCapacity: json["currentCapacity"].intValue,
+                            type: "Vehicle",
+                            coordinate: CLLocationCoordinate2D(latitude: json["location"][0].doubleValue, longitude: json["location"][1].doubleValue))
+                        
+                        
+                        self.mapView.addAnnotation(assignment)
+                        
+                        self.showDirections(origin, dest: destination)
+                        //print(start.type)
+                        //print(end.type)
+                    }
+            }
 
         }
         
-        print(destination.latitude)
-        
-        
-        let paras = [
-            "DeviceType": "Student",
-            "RequestType": "Pickup",
-            "Origin": String(origin.latitude) + " " + String(origin.longitude),
-            "Destination": String(destination.latitude) + " " + String(destination.longitude),
-            "Passengers": String(passengers)
-        ]
-        
-        Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
-            .response { request, response, data, error in
-                //print(response)
-                //print(data)
-                
-                let json = JSON(data: data!)
-                
-                if(data == "max_capacity") {
-                   //alert user MAX CAPACITY
-                }
-                else {
-                    self.removeAllAnnotations()
-                    self.mapView.delegate = self
-                
-                    
-                    let assignment = Vehicle(title: json["driverName"].string!,
-                        capacity: json["capacity"].intValue,
-                        currentCapacity: json["currentCapacity"].intValue,
-                        type: "Vehicle",
-                        coordinate: CLLocationCoordinate2D(latitude: json["location"][0].doubleValue, longitude: json["location"][1].doubleValue))
-
-                
-                    self.mapView.addAnnotation(assignment)
-                    
-                    self.showDirections(origin, dest: destination)
-                    //print(start.type)
-                    //print(end.type)
-                }
-        }
-
     }
 
 }
