@@ -106,6 +106,14 @@ public class Vehicle {
 		return this.currentCapacity;
 	}
 	
+	public void addPassengers(int c) {
+		this.currentCapacity -= c;
+	}
+	
+	public void removePassengers(int c) {
+		this.currentCapacity += c;
+	}
+	
 	public String getDriverName() {
 		return this.driverName;
 	}

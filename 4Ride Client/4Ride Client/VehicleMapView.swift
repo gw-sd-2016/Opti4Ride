@@ -19,8 +19,10 @@ extension ViewController: MKMapViewDelegate {
                 as? MKPinAnnotationView {
                     dequeuedView.annotation = annotation
                     view = dequeuedView
+                    view.pinTintColor = annotation.pinTintColor()
             } else {
                 view = MKPinAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                view.pinTintColor = annotation.pinTintColor()
                 view.canShowCallout = true
                 view.calloutOffset = CGPoint(x: -5, y: 5)
                 view.rightCalloutAccessoryView = UIButton(type: .DetailDisclosure) as UIView
@@ -28,6 +30,12 @@ extension ViewController: MKMapViewDelegate {
             return view
         }
         return nil
+    }
+    
+    func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer {
+        let renderer = MKPolylineRenderer(polyline: overlay as! MKPolyline)
+        renderer.strokeColor = UIColor.blueColor()
+        return renderer
     }
 
 }
