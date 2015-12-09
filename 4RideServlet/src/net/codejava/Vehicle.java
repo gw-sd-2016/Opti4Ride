@@ -63,7 +63,7 @@ public class Vehicle {
 	}
 	
 	public boolean setGraph(Map<String, Map<String, Integer>> adjList) {
-	    if(adjList.isEmpty() || !isComplete(adjList))
+	    if(!isComplete(adjList))
 	    	return false;
 	    else {
 	    	this.adjacencyList = adjList;
@@ -76,7 +76,7 @@ public class Vehicle {
 	}
 	
 	public boolean setItinerary(String[] it) {
-	    if(it == null || (it != null && it[0] == null))
+	    if(it[0] == null)
 	    	return false;
 	    else {
 	    	this.itinerary = it;
@@ -93,6 +93,15 @@ public class Vehicle {
 	    	return false;
 	    else {
 	    	this.priorities.put(key, value);
+	    	return true;
+	    }
+	}
+	
+	public boolean removePriority(String key) {
+	    if(key == null)
+	    	return false;
+	    else {
+	    	this.priorities.remove(key);
 	    	return true;
 	    }
 	}
@@ -122,6 +131,10 @@ public class Vehicle {
 		return this.currentCapacity;
 	}
 	
+	public void setCurrentCapacity(int c) {
+		this.currentCapacity = c;
+	}
+	
 	public void addPassengers(int c) {
 		this.currentCapacity -= c;
 	}
@@ -132,11 +145,6 @@ public class Vehicle {
 	
 	public String getDriverName() {
 		return this.driverName;
-	}
-
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -14,16 +14,20 @@ import SwiftyJSON
 class ViewController: UIViewController, CLLocationManagerDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var requestButton: UIButton!
-    @IBOutlet weak var destinationBar: UITextField!
-    @IBOutlet weak var idleView: UIStackView!
-    @IBOutlet weak var activeView: UIStackView!
+    @IBOutlet weak var inactiveView: UIVisualEffectView!
     @IBOutlet weak var sliderValue: UILabel!
+    @IBOutlet weak var destinationBar: UITextField!
     @IBOutlet weak var capacitySlider: UISlider!
+    @IBOutlet weak var requestButton: UIButton!
+    @IBOutlet weak var activeView: UIVisualEffectView!
+    @IBOutlet weak var driverName: UILabel!
+    @IBOutlet weak var driverDistance: UILabel!
     
     var sliderValues = [UILabel]()
     let locationManager = CLLocationManager()
     var currentLocation = CLLocationCoordinate2D()
+    var origin = CLLocationCoordinate2D()
+    var destination = CLLocationCoordinate2D()
     
     func setDefaultRegion() {
         
@@ -33,9 +37,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
     }
     
-    func removeAllAnnotations() {
+    func clearMap() {
         let annotationsToRemove = self.mapView.annotations.filter { $0 !== mapView.userLocation }
         self.mapView.removeAnnotations( annotationsToRemove )
+        
+        let overlaysToRemove = self.mapView.overlays
+        self.mapView.removeOverlays(overlaysToRemove)
     }
     
     override func viewDidLoad() {
@@ -46,10 +53,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         self.locationManager.requestWhenInUseAuthorization()
         self.locationManager.startUpdatingLocation()
         
-        activeView.hidden = true
         mapView.delegate = self
         setDefaultRegion();
-        
+       /*
         let labelSpacing = CGFloat((UIScreen.mainScreen().bounds.width-30)/5)
         var xPosition = CGFloat(CGRectGetMinX(UIScreen.mainScreen().bounds)+15)
         let labelWidth = CGFloat(10)
@@ -72,9 +78,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             
             xPosition += labelSpacing;
         }
-        
+        */
         self.mapView.showsUserLocation = true
-        //self.mapView.showsTraffic = true
+        self.mapView.showsTraffic = true
+        self.activeView.hidden = true
         self.mapView.showsScale = true
         loadAllVehicles();
     }
@@ -199,14 +206,29 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
     }
     
+    func distanceTo(location: CLLocationCoordinate2D) -> String {
+        let oldLocation = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
+        let newLocation = CLLocation(latitude: location.latitude, longitude: location.longitude)
+        
+        let miles = oldLocation.distanceFromLocation(newLocation)*(0.000621371)
+        
+        let formatter = NSNumberFormatter()
+        formatter.minimumFractionDigits = 2
+        formatter.roundingMode = .RoundDown
+        formatter.maximumFractionDigits = 2
+        let formattedAmountString = formatter.stringFromNumber(miles)
+        
+        return formattedAmountString!
+    }
+
+    
     //Actions
-    @IBAction func requestDelegate(sender: AnyObject) {
+    @IBAction func pickupRequestDelegate(sender: AnyObject) {
         //request to algorithm
         
-        let origin = CLLocationCoordinate2D(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
-        var destination = CLLocationCoordinate2D(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
+        origin = CLLocationCoordinate2DMake(currentLocation.latitude, currentLocation.longitude)
         let passengers = capacitySlider.value;
-    
+        
         CLGeocoder().geocodeAddressString(self.destinationBar.text!) { (placemark, error) -> Void in
             
             print(self.destinationBar.text)
@@ -220,19 +242,19 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             if placemark!.count > 0
             {
                 let pm = placemark![0] as! CLPlacemark
-                destination = CLLocationCoordinate2D(latitude: pm.location!.coordinate.latitude, longitude: pm.location!.coordinate.longitude)
+                self.destination = CLLocationCoordinate2DMake(pm.location!.coordinate.latitude, pm.location!.coordinate.longitude)
             }
             
             let paras = [
                 "DeviceType": "Student",
                 "RequestType": "Pickup",
-                "Origin": String(origin.latitude) + " " + String(origin.longitude),
-                "Destination": String(destination.latitude) + " " + String(destination.longitude),
+                "Origin": String(self.origin.latitude) + " " + String(self.origin.longitude),
+                "Destination": String(self.destination.latitude) + " " + String(self.destination.longitude),
                 "Passengers": String(passengers)
             ]
             
             print("sent destination:")
-            print(String(destination.latitude) + " " + String(destination.longitude))
+            print(String(self.destination.latitude) + " " + String(self.destination.longitude))
             
             Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
                 .response { request, response, data, error in
@@ -246,28 +268,64 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                         //UIAlert
                     }
                     else {
-                        self.removeAllAnnotations()
+                        self.clearMap()
                         self.mapView.delegate = self
                         
+                        let vehicleLoc = CLLocationCoordinate2D(latitude: json["location"][0].doubleValue,
+                                                                longitude: json["location"][1].doubleValue)
                         
                         let assignment = Vehicle(title: json["driverName"].string!,
                             capacity: json["capacity"].intValue,
                             currentCapacity: json["currentCapacity"].intValue,
                             type: "Vehicle",
-                            coordinate: CLLocationCoordinate2D(latitude: json["location"][0].doubleValue, longitude: json["location"][1].doubleValue))
+                            coordinate: vehicleLoc)
                         
+                        self.driverName.text = json["driverName"].string!
+                        self.driverDistance.text = String(self.distanceTo(vehicleLoc)) + " miles away"
                         
                         self.mapView.addAnnotation(assignment)
+                        self.showDirections(self.origin, dest: self.destination)
                         
-                        self.showDirections(origin, dest: destination)
-                        //print(start.type)
-                        //print(end.type)
+                        self.inactiveView.hidden = true
+                        self.activeView.hidden = false
                     }
             }
-
+            
         }
-        
     }
 
+    @IBAction func cancelRequest(sender: AnyObject) {
+        
+        let paras = [
+            "DeviceType": "Student",
+            "RequestType": "Cancel",
+            "DriverName": self.driverName.text!,
+            "PassengerCount": String(self.capacitySlider.value),
+            "Origin": String(self.origin.latitude) + " " + String(self.origin.longitude),
+            "Destination": String(self.destination.latitude) + " " + String(self.destination.longitude)
+        ]
+        
+        Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
+            .response { request, response, data, error in
+                //print(response)
+                print(data)
+                
+                let json = JSON(data: data!)
+                print(json)
+                
+                if(String(json[0]) == "Cancel Complete") {
+                    self.activeView.hidden = true
+                    self.inactiveView.hidden = false
+                    self.clearMap()
+                    self.loadAllVehicles()
+                }
+                else {
+                    let alertView = UIAlertController(title: "Cancellation Error", message: "Our server was unable to service your request at this time.", preferredStyle: .Alert)
+                    alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                    self.presentViewController(alertView, animated: true, completion: nil)
+                }
+        }
+ 
+    }
 }
 
