@@ -1,10 +1,9 @@
 //
-//  MealTableViewController.swift
-//  FoodTracker
+//  ItineraryViewController.swift
+//  4Ride Driver
 //
-//  Created by Jane Appleseed on 5/27/15.
-//  Copyright © 2015 Apple Inc. All rights reserved.
-//  See LICENSE.txt for this sample’s licensing information.
+//  Created by Randy Fitzmorris on 10/1/15.
+//  Copyright © 2015 Randy Fitzmorris All rights reserved.
 //
 
 import UIKit
@@ -12,10 +11,10 @@ import CoreLocation
 import Alamofire
 import SwiftyJSON
 
-class MealTableViewController: UITableViewController, CLLocationManagerDelegate {
-    // MARK: Properties
+class ItineraryController: UITableViewController, CLLocationManagerDelegate {
     
-    var meals = [Meal]()
+    //initialize globals
+    var itItems = [ItineraryItem]()
     let locationManager = CLLocationManager()
     var currentLocation = CLLocationCoordinate2D()
     @IBOutlet var distanceReading: UITableView!
@@ -24,24 +23,29 @@ class MealTableViewController: UITableViewController, CLLocationManagerDelegate 
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //enable CoreLocation services
         self.locationManager.delegate = self
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         self.locationManager.requestWhenInUseAuthorization()
         self.locationManager.startUpdatingLocation()
         
+        //load vehicle's current itinerary
         loadItinerary()
+        
+        //then load vehicle's current itinerary every 10 seconds
         var timer = NSTimer.scheduledTimerWithTimeInterval(10, target: self, selector: "itineraryUpdate", userInfo: nil, repeats: true)
     }
     
     func itineraryUpdate() {
-        
-      loadItinerary()
+      //loadItinerary()
     }
     
     func loadItinerary() {
         
-        self.meals = [Meal]()
+        //empty itinerary items array for each load
+        self.itItems = [ItineraryItem]()
     
+        //paramaters that adhere to itinerary load request protocol
         let paras = [
             "DeviceType": "Driver",
         ]
@@ -57,6 +61,8 @@ class MealTableViewController: UITableViewController, CLLocationManagerDelegate 
                 
                 let itinerary = json["itinerary"].array
                 
+                //for each itinerary item, save as itinerary item
+                //pass this itinerary item to the graph and reload
                 for var index=0; index<3; index++ {
                     
                     let destinationAddress = itinerary![index]
@@ -78,11 +84,11 @@ class MealTableViewController: UITableViewController, CLLocationManagerDelegate 
                         
                         let addressArray = String(destinationAddress).componentsSeparatedByString(",")
 
-                        let meal = Meal(photo: UIImage(named: "defaultPhoto")!,
+                        let meal = ItineraryItem(photo: UIImage(named: "defaultPhoto")!,
                             address: String(addressArray[0]),
                             location: destinationCoords)
                 
-                        self.meals.append(meal!)
+                        self.itItems.append(meal!)
                         self.tableView.reloadData()
                     }
                 }
@@ -101,38 +107,38 @@ class MealTableViewController: UITableViewController, CLLocationManagerDelegate 
         return 1
     }
 
+    //set # of table rows to # of itinerary items
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return meals.count
+        return itItems.count
     }
 
+    //convert itinerary item to table cell and reload
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         // Table view cells are reused and should be dequeued using a cell identifier.
         let cellIdentifier = "MealTableViewCell"
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! MealTableViewCell
+        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! ItineraryTableViewCell
         
         // Fetches the appropriate meal for the data source layout.
-        let meal = meals[indexPath.row]
+        let itItem = itItems[indexPath.row]
         
-        cell.nameLabel.text = meal.address
-        cell.photoImageView.image = meal.photo
-        cell.distance.text = distanceTo(meal.location)
+        cell.nameLabel.text = itItem.address
+        cell.photoImageView.image = itItem.photo
+        cell.distance.text = distanceTo(itItem.location)
         
         //cell.backgroundColor = UIColor.greenColor()
         
         return cell
     }
     
-    //LocationUpdater
+    //set current location to last updated location
     func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
         let location = locations.last
         self.currentLocation = CLLocationCoordinate2DMake(location!.coordinate.latitude, location!.coordinate.longitude)
-        //print("current location")
-        //print(location!.coordinate.latitude)
-        //print(location!.coordinate.longitude)
         
     }
     
+    //determine distance from one point to another in miles
     func distanceTo(location: CLLocationCoordinate2D) -> String {
         let oldLocation = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
         let newLocation = CLLocation(latitude: location.latitude, longitude: location.longitude)

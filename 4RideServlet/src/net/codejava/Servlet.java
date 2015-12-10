@@ -401,6 +401,7 @@ public class Servlet extends HttpServlet {
 		//for each vehicle, compute optimal tour with request locations added to the graph
 		
 		int minTourDifference = Integer.MAX_VALUE;
+		int maxTour = 5;
 		Map<String, Map<String, String>> itinerary = null;
 		
 		for(int i=0; i<updatedGraphs.size(); i++) {
@@ -433,12 +434,14 @@ public class Servlet extends HttpServlet {
     		{
     			if(vehicles[i].getCurrentCapacity() > 0 && (vehicles[i].getCapacity()-vehicles[i].getCurrentCapacity() >= passengers)) {
     				System.out.println("Assigned Vehicle: " + vehicles[i].getDriverName());
+    				System.out.println("Original capacity: 4");
 	    			System.out.println("New capacity: " + (vehicles[i].getCapacity()-vehicles[i].getCurrentCapacity()));
 	    			minTourDifference = newTour - currentTour;
 	    			itinerary = it;
 	    			vehicleAssignment = i;
 	    			vehicles[i].addPassengers(passengers);
 	    			System.out.println("Change in min tour = " + minTourDifference);
+	    			System.out.println("Saved " + maxTour + "!");
 	    			System.out.println("New Itinerary:");
 	    			vehicles[i].setItinerary(printOptimalTour(itinerary));
 	    			
@@ -458,6 +461,9 @@ public class Servlet extends HttpServlet {
     			else {
     				return -1;
     			}
+    		}
+    		if(maxTour < newTour) {
+    			//maxTour = newTour;
     		}
 		}
 		
@@ -510,6 +516,7 @@ public class Servlet extends HttpServlet {
 		for(int i=1; i<n; i++) 			
 			D.get(nodes[i]).put(Arrays.toString(new String[0]), weights.get(nodes[i]).get(nodes[0]));
 		
+		//populate D with optimal tours of all subsets
 		for(int k=1; k<=(n-2); k++) 
 		{
 			for( String[] A : vMinusV1AsList ) 
@@ -549,6 +556,7 @@ public class Servlet extends HttpServlet {
 			}
 		}
 		
+		//calculate full optimal tour from D
 		int dVal = Integer.MAX_VALUE;
 		String dValIndex = "";
 		ArrayList<String> nodesAsList = new ArrayList<String>(Arrays.asList(nodes));
@@ -576,12 +584,14 @@ public class Servlet extends HttpServlet {
 		paths.get(nodes[0]).put(Arrays.toString(nodesMinusV1), dValIndex);
 		System.out.println("P[" + nodes[0] + "][" + Arrays.toString(nodesMinusV1) +"] = " + dValIndex);
 		
+		//return min tour
 		return D.get(nodes[0]).get(Arrays.toString(nodesMinusV1));
 		
 	}
 
 	protected String[] printOptimalTour(Map<String, Map<String, String>> paths) {
 	
+		//print optimal tour from P
 		ArrayList<String> nodesList = new ArrayList<String>(paths.keySet()); 
 		ArrayList<String> itinerary = new ArrayList<String>();
 		Collections.sort(nodesList);
@@ -602,6 +612,7 @@ public class Servlet extends HttpServlet {
 		itinerary.add(v1);
 		System.out.println(v1);
 		
+		//return itinerary
 		return itinerary.toArray(new String[itinerary.size()]);
 	}
 	

@@ -1,15 +1,14 @@
 //
-//  MealTableViewCell.swift
-//  FoodTracker
+//  ItineraryViewCell.swift
+//  4Ride Driver
 //
-//  Created by Jane Appleseed on 5/27/15.
-//  Copyright © 2015 Apple Inc. All rights reserved.
-//  See LICENSE.txt for this sample’s licensing information.
+//  Created by Randy Fitzmorris on 10/1/15.
+//  Copyright © 2015 Randy Fitzmorris All rights reserved.
 //
 
 import UIKit
 
-class MealTableViewCell: UITableViewCell {
+class ItineraryTableViewCell: UITableViewCell {
     // MARK: Properties
 
     @IBOutlet weak var nameLabel: UILabel!

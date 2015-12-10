@@ -11,14 +11,13 @@
 		55314D381BF1B7650090304B /* Alamofire.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 55314D2E1BF1B7230090304B /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		55314D601BF1B7F20090304B /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55314D571BF1B7AA0090304B /* SwiftyJSON.framework */; };
 		55314D611BF1B7F20090304B /* SwiftyJSON.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 55314D571BF1B7AA0090304B /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		55946CD11C188C2A001284F7 /* ItineraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55946CD01C188C2A001284F7 /* ItineraryViewController.swift */; };
+		55946CD41C189277001284F7 /* ItineraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55946CD21C189277001284F7 /* ItineraryItem.swift */; };
+		55946CD51C189277001284F7 /* ItineraryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55946CD31C189277001284F7 /* ItineraryTableViewCell.swift */; };
 		CA1902E01B10E523000271C4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1902DF1B10E523000271C4 /* AppDelegate.swift */; };
 		CA1902E51B10E523000271C4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CA1902E31B10E523000271C4 /* Main.storyboard */; };
 		CA1902EA1B10E523000271C4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CA1902E81B10E523000271C4 /* LaunchScreen.storyboard */; };
 		CA1902F51B10E523000271C4 /* 4RideDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1902F41B10E523000271C4 /* 4RideDriverTests.swift */; };
-		CA5D06011B162F2300095F0F /* MealTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5D06001B162F2300095F0F /* MealTableViewCell.swift */; };
-		CA5D06031B162F2300095F0F /* MealTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5D06021B162F2300095F0F /* MealTableViewController.swift */; };
-		CA734E351B155077001A6F80 /* Meal.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA734E341B155077001A6F80 /* Meal.swift */; };
-		CA734E361B155077001A6F80 /* Meal.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA734E341B155077001A6F80 /* Meal.swift */; };
 		CA96F92B1B1144F7000CC7F8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA96F92A1B1144F7000CC7F8 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -134,6 +133,9 @@
 /* Begin PBXFileReference section */
 		55314D251BF1B7230090304B /* Alamofire.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Alamofire.xcodeproj; path = "Alamofire-master/Alamofire.xcodeproj"; sourceTree = "<group>"; };
 		55314D4E1BF1B7AA0090304B /* SwiftyJSON.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftyJSON.xcodeproj; path = "SwiftyJSON-master/SwiftyJSON.xcodeproj"; sourceTree = "<group>"; };
+		55946CD01C188C2A001284F7 /* ItineraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItineraryViewController.swift; sourceTree = "<group>"; };
+		55946CD21C189277001284F7 /* ItineraryItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItineraryItem.swift; sourceTree = "<group>"; };
+		55946CD31C189277001284F7 /* ItineraryTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItineraryTableViewCell.swift; sourceTree = "<group>"; };
 		CA1902DC1B10E523000271C4 /* 4Ride Driver.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "4Ride Driver.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA1902DF1B10E523000271C4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CA1902E41B10E523000271C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -142,9 +144,6 @@
 		CA1902F01B10E523000271C4 /* 4Ride Driver.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "4Ride Driver.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA1902F41B10E523000271C4 /* 4RideDriverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 4RideDriverTests.swift; sourceTree = "<group>"; };
 		CA1902F61B10E523000271C4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CA5D06001B162F2300095F0F /* MealTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MealTableViewCell.swift; sourceTree = "<group>"; };
-		CA5D06021B162F2300095F0F /* MealTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MealTableViewController.swift; sourceTree = "<group>"; };
-		CA734E341B155077001A6F80 /* Meal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Meal.swift; sourceTree = "<group>"; };
 		CA96F92A1B1144F7000CC7F8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -216,10 +215,10 @@
 			isa = PBXGroup;
 			children = (
 				CA1902DF1B10E523000271C4 /* AppDelegate.swift */,
-				CA734E341B155077001A6F80 /* Meal.swift */,
 				CA1902E31B10E523000271C4 /* Main.storyboard */,
-				CA5D06021B162F2300095F0F /* MealTableViewController.swift */,
-				CA5D06001B162F2300095F0F /* MealTableViewCell.swift */,
+				55946CD01C188C2A001284F7 /* ItineraryViewController.swift */,
+				55946CD31C189277001284F7 /* ItineraryTableViewCell.swift */,
+				55946CD21C189277001284F7 /* ItineraryItem.swift */,
 				CA96F92A1B1144F7000CC7F8 /* Assets.xcassets */,
 				CA1902E81B10E523000271C4 /* LaunchScreen.storyboard */,
 				CA1902EB1B10E523000271C4 /* Info.plist */,
@@ -422,10 +421,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA734E351B155077001A6F80 /* Meal.swift in Sources */,
+				55946CD41C189277001284F7 /* ItineraryItem.swift in Sources */,
+				55946CD51C189277001284F7 /* ItineraryTableViewCell.swift in Sources */,
 				CA1902E01B10E523000271C4 /* AppDelegate.swift in Sources */,
-				CA5D06031B162F2300095F0F /* MealTableViewController.swift in Sources */,
-				CA5D06011B162F2300095F0F /* MealTableViewCell.swift in Sources */,
+				55946CD11C188C2A001284F7 /* ItineraryViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,7 +432,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA734E361B155077001A6F80 /* Meal.swift in Sources */,
 				CA1902F51B10E523000271C4 /* 4RideDriverTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

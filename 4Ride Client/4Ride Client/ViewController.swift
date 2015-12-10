@@ -29,6 +29,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     var origin = CLLocationCoordinate2D()
     var destination = CLLocationCoordinate2D()
     
+    //set default region displayed on map (GWU Foggy Bottom Campus)
     func setDefaultRegion() {
         
         let location = CLLocationCoordinate2D(latitude: 38.899571, longitude: -77.048275)
@@ -37,6 +38,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
     }
     
+    //clear all pins and overlays on map
     func clearMap() {
         let annotationsToRemove = self.mapView.annotations.filter { $0 !== mapView.userLocation }
         self.mapView.removeAnnotations( annotationsToRemove )
@@ -45,16 +47,22 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         self.mapView.removeOverlays(overlaysToRemove)
     }
     
+    //inital app setup
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //enable CoreLocation services
         self.locationManager.delegate = self
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         self.locationManager.requestWhenInUseAuthorization()
         self.locationManager.startUpdatingLocation()
         
+        //attach map to code
         mapView.delegate = self
         setDefaultRegion();
+        
+        //add numeric value to slider, working but disabled for cleaner UI
+        //must connect idleView to code (in inactiveView)
        /*
         let labelSpacing = CGFloat((UIScreen.mainScreen().bounds.width-30)/5)
         var xPosition = CGFloat(CGRectGetMinX(UIScreen.mainScreen().bounds)+15)
@@ -79,19 +87,27 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             xPosition += labelSpacing;
         }
         */
+        
+        //enable map features
         self.mapView.showsUserLocation = true
         self.mapView.showsTraffic = true
-        self.activeView.hidden = true
         self.mapView.showsScale = true
+        
+        //hide active view, initialize with inactive view (no current request)
+        self.activeView.hidden = true
+        //load current in-service vehicles
         loadAllVehicles();
     }
     
     func loadAllVehicles() {
+        
+        //loadAllVehicles request params (protocol accepted by server)
         let paras = [
             "DeviceType": "Student",
             "RequestType": "VehicleLocations"
         ]
         
+        //request all vehicles in service
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
                 //print(response)
@@ -119,10 +135,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         let capacity = round(sender.value)
         capacitySlider.value = capacity
         
+        /*
         for var i=0; i < 6; i++ {
             sliderValues[i].hidden = true
         }
+        
         sliderValues[Int(capacity)-1].hidden = false
+        */
     }
 
     override func didReceiveMemoryWarning() {
@@ -133,9 +152,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     //LocationUpdater
     func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
+        //set new location to current
         let location = locations.last
         self.currentLocation = CLLocationCoordinate2DMake(location!.coordinate.latitude, location!.coordinate.longitude)
         
+        //test method for current location
         CLGeocoder().reverseGeocodeLocation(manager.location!) { (placemarks, error) -> Void in
         
             if error != nil
@@ -147,7 +168,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             if placemarks!.count > 0
             {
                 let pm = placemarks![0] as! CLPlacemark
-                self.displayLocationInfo(pm)
+                //self.displayLocationInfo(pm)
             }
         }
         
@@ -156,12 +177,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     func displayLocationInfo(placemark: CLPlacemark) {
         
         //self.locationManager.stopUpdatingLocation()
-        /*
+        
         print(placemark.locality, terminator: "\n")
         print(placemark.postalCode, terminator: "\n")
         print(placemark.administrativeArea, terminator: "\n")
         print(placemark.country, terminator: "\n")
-        */
+        
         
     }
     
@@ -169,6 +190,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         print("Error: " + error.localizedDescription, terminator: "\n")
     }
     
+    //calculate route between two points, output as map overlay
     func showDirections( orig: CLLocationCoordinate2D, dest: CLLocationCoordinate2D) {
         
         let currentPlace: MKPlacemark = MKPlacemark(coordinate: orig, addressDictionary: nil)
@@ -206,6 +228,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
     }
     
+    //calculate distance between two points
     func distanceTo(location: CLLocationCoordinate2D) -> String {
         let oldLocation = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
         let newLocation = CLLocation(latitude: location.latitude, longitude: location.longitude)
@@ -223,12 +246,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
 
     
     //Actions
+    
+    //request a pickup
     @IBAction func pickupRequestDelegate(sender: AnyObject) {
-        //request to algorithm
         
+        //set origin location to current location when request is issued
         origin = CLLocationCoordinate2DMake(currentLocation.latitude, currentLocation.longitude)
         let passengers = capacitySlider.value;
         
+        //get destination coordinates from address input, issue request
         CLGeocoder().geocodeAddressString(self.destinationBar.text!) { (placemark, error) -> Void in
             
             print(self.destinationBar.text)
@@ -245,6 +271,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                 self.destination = CLLocationCoordinate2DMake(pm.location!.coordinate.latitude, pm.location!.coordinate.longitude)
             }
             
+            //protocol parameters accepted by server
             let paras = [
                 "DeviceType": "Student",
                 "RequestType": "Pickup",
@@ -253,9 +280,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                 "Passengers": String(passengers)
             ]
             
-            print("sent destination:")
-            print(String(self.destination.latitude) + " " + String(self.destination.longitude))
-            
+            //issue pickup request
             Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
                 .response { request, response, data, error in
                     //print(response)
@@ -263,11 +288,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                     
                     let json = JSON(data: data!)
                     
+                    //alert user if system saturated
                     if(data == "max_capacity") {
-                        //alert user MAX CAPACITY
-                        //UIAlert
+                        let alertView = UIAlertController(title: "Pickup Request Error", message: "Our server was unable to service your request at this time. Max student capacity reached.", preferredStyle: .Alert)
+                        alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                        self.presentViewController(alertView, animated: true, completion: nil)
                     }
                     else {
+                        //clear map, add purple pin for assigned vehicle
                         self.clearMap()
                         self.mapView.delegate = self
                         
@@ -280,12 +308,17 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                             type: "Vehicle",
                             coordinate: vehicleLoc)
                         
+                        //display assignment info in active view
                         self.driverName.text = json["driverName"].string!
                         self.driverDistance.text = String(self.distanceTo(vehicleLoc)) + " miles away"
                         
                         self.mapView.addAnnotation(assignment)
+                        //show route from request's origin to destination 
+                        //origin represented as green pin
+                        //destination represented as red pin
                         self.showDirections(self.origin, dest: self.destination)
                         
+                        //switch to active view
                         self.inactiveView.hidden = true
                         self.activeView.hidden = false
                     }
@@ -294,8 +327,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         }
     }
 
+    //issue cancellation request to server
     @IBAction func cancelRequest(sender: AnyObject) {
         
+        //parameters needed for cancellation protocol
         let paras = [
             "DeviceType": "Student",
             "RequestType": "Cancel",
@@ -305,6 +340,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             "Destination": String(self.destination.latitude) + " " + String(self.destination.longitude)
         ]
         
+        //issue cancellation request
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
                 //print(response)
@@ -313,12 +349,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                 let json = JSON(data: data!)
                 print(json)
                 
+                //if cancellation successful, return to inactive state
                 if(String(json[0]) == "Cancel Complete") {
                     self.activeView.hidden = true
                     self.inactiveView.hidden = false
                     self.clearMap()
                     self.loadAllVehicles()
                 }
+                //if cancellation unsuccessful, alert user
                 else {
                     let alertView = UIAlertController(title: "Cancellation Error", message: "Our server was unable to service your request at this time.", preferredStyle: .Alert)
                     alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))

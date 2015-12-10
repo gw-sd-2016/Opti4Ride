@@ -11,6 +11,7 @@ import MapKit
 
 extension ViewController: MKMapViewDelegate {
 
+    //manage adding pins to map, recycling pins when possible
     func mapView(mapView: MKMapView!, viewForAnnotation annotation: MKAnnotation!) -> MKAnnotationView! {
         if let annotation = annotation as? Vehicle {
             let identifier = "pin"
@@ -32,6 +33,7 @@ extension ViewController: MKMapViewDelegate {
         return nil
     }
     
+    //manage adding overlays to map
     func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer {
         let renderer = MKPolylineRenderer(polyline: overlay as! MKPolyline)
         renderer.strokeColor = UIColor.blueColor()
