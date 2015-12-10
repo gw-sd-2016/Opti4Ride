@@ -15,5 +15,8 @@ iOS External Libraries
 Java External Libraries
 1) Jackson - JSON serialization and parsing
 
+JavaScript External Libraries
+1) Leaflet.JS - maps routes on Display Module
+
 External APIs
 1) Google Maps API - geocoding, reverse geocoding, and distance calculations (by time) on server
