@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="3IM-eE-Fr1">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController title="View Controller" id="BYZ-38-t0r" customClass="ViewController" customModule="_Ride_Student" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
+                        <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="WA3-BP-HrB">
+                                <rect key="frame" x="0.0" y="65" width="600" height="535"/>
+                            </mapView>
+                            <stackView opaque="NO" contentMode="scaleAspectFill" misplaced="YES" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="kKa-D0-F8C">
+                                <rect key="frame" x="0.0" y="475" width="600" height="141"/>
+                                <subviews>
+                                    <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1Jk-kH-xXt">
+                                        <rect key="frame" x="0.0" y="0.0" width="600" height="141"/>
+                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="Cma-wE-wko">
+                                            <rect key="frame" x="0.0" y="0.0" width="600" height="141"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="xQV-Ew-3jk">
+                                                    <rect key="frame" x="8" y="8" width="584" height="125"/>
+                                                    <subviews>
+                                                        <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="2400 M Street NW, Washington, DC 20037" borderStyle="roundedRect" textAlignment="natural" adjustsFontSizeToFit="NO" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="b6e-Pi-jMG">
+                                                            <rect key="frame" x="0.0" y="0.0" width="584" height="30"/>
+                                                            <color key="textColor" red="0.2398151178" green="0.2398151178" blue="0.2398151178" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                            <textInputTraits key="textInputTraits"/>
+                                                        </textField>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Number of Passengers" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Qz-Lc-6tN">
+                                                            <rect key="frame" x="0.0" y="30" width="584" height="35"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" constant="35" id="u4v-Z7-hxY"/>
+                                                            </constraints>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="2" minValue="1" maxValue="6" translatesAutoresizingMaskIntoConstraints="NO" id="Ooh-rE-f71">
+                                                            <rect key="frame" x="-2" y="65" width="588" height="31"/>
+                                                            <connections>
+                                                                <action selector="sliderChangeAction:" destination="BYZ-38-t0r" eventType="valueChanged" id="3cU-4x-cVW"/>
+                                                            </connections>
+                                                        </slider>
+                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zaj-ex-cdj">
+                                                            <rect key="frame" x="0.0" y="95" width="584" height="30"/>
+                                                            <state key="normal" title="Request Pickup"/>
+                                                            <connections>
+                                                                <action selector="pickupRequestDelegate:" destination="BYZ-38-t0r" eventType="touchUpInside" id="JiG-ds-imY"/>
+                                                            </connections>
+                                                        </button>
+                                                    </subviews>
+                                                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                                </stackView>
+                                                <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Mdm-JH-ec7">
+                                                    <rect key="frame" x="0.0" y="70" width="111" height="30"/>
+                                                    <subviews>
+                                                        <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rD4-DW-gxm">
+                                                            <rect key="frame" x="0.0" y="0.0" width="111" height="30"/>
+                                                            <state key="normal" title="Request Pickup "/>
+                                                            <connections>
+                                                                <action selector="requestDelegate:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vft-NQ-WAR"/>
+                                                            </connections>
+                                                        </button>
+                                                    </subviews>
+                                                </stackView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="xQV-Ew-3jk" firstAttribute="top" secondItem="Cma-wE-wko" secondAttribute="topMargin" id="8Pi-hS-Ag9"/>
+                                                <constraint firstItem="xQV-Ew-3jk" firstAttribute="centerY" secondItem="Cma-wE-wko" secondAttribute="centerY" id="EFG-0W-IFu"/>
+                                                <constraint firstItem="xQV-Ew-3jk" firstAttribute="leading" secondItem="Cma-wE-wko" secondAttribute="leadingMargin" id="Ex2-dA-MeZ"/>
+                                                <constraint firstAttribute="trailing" secondItem="xQV-Ew-3jk" secondAttribute="trailingMargin" constant="8" id="aiv-0G-tCU"/>
+                                            </constraints>
+                                        </view>
+                                        <blurEffect style="light"/>
+                                    </visualEffectView>
+                                    <visualEffectView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gGq-ZX-clC">
+                                        <rect key="frame" x="0.0" y="141" width="600" height="0.0"/>
+                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" id="nwI-dS-DXr">
+                                            <rect key="frame" x="0.0" y="0.0" width="600" height="0.0"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="oaX-1t-JCt" userLabel="Active View">
+                                                    <rect key="frame" x="8" y="8" width="584" height="93"/>
+                                                    <subviews>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Your 4Ride is on its way!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZrX-Y3-mtf">
+                                                            <rect key="frame" x="0.0" y="0.0" width="584" height="21"/>
+                                                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
+                                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="DriverName" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EQQ-LV-LLg">
+                                                            <rect key="frame" x="0.0" y="21" width="584" height="21"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="DriverDistance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hEQ-1i-8jy">
+                                                            <rect key="frame" x="0.0" y="42" width="584" height="21"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lMv-5Y-DTK">
+                                                            <rect key="frame" x="0.0" y="63" width="584" height="30"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                                            <state key="normal" title="Cancel Request"/>
+                                                            <connections>
+                                                                <action selector="cancelRequest:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jGg-IA-fMC"/>
+                                                            </connections>
+                                                        </button>
+                                                    </subviews>
+                                                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                                </stackView>
+                                                <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fkb-Z2-u87">
+                                                    <rect key="frame" x="0.0" y="70" width="111" height="30"/>
+                                                    <subviews>
+                                                        <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rUe-ug-4Pe">
+                                                            <rect key="frame" x="0.0" y="0.0" width="111" height="30"/>
+                                                            <state key="normal" title="Request Pickup "/>
+                                                            <connections>
+                                                                <action selector="requestDelegate:" destination="BYZ-38-t0r" eventType="touchUpInside" id="7ak-a7-AHN"/>
+                                                            </connections>
+                                                        </button>
+                                                    </subviews>
+                                                </stackView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="trailing" secondItem="oaX-1t-JCt" secondAttribute="trailingMargin" constant="8" id="VOx-c4-a3T"/>
+                                                <constraint firstItem="oaX-1t-JCt" firstAttribute="leading" secondItem="nwI-dS-DXr" secondAttribute="leadingMargin" id="biN-3G-Uod"/>
+                                                <constraint firstItem="oaX-1t-JCt" firstAttribute="centerY" secondItem="nwI-dS-DXr" secondAttribute="centerY" id="eAn-5d-T59"/>
+                                                <constraint firstItem="oaX-1t-JCt" firstAttribute="top" secondItem="nwI-dS-DXr" secondAttribute="topMargin" id="mWY-Ws-ybu"/>
+                                            </constraints>
+                                        </view>
+                                        <blurEffect style="light"/>
+                                    </visualEffectView>
+                                </subviews>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="WA3-BP-HrB" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="1" id="2cQ-ZU-giY"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="kKa-D0-F8C" secondAttribute="bottom" id="3W2-X0-A4B"/>
+                            <constraint firstItem="kKa-D0-F8C" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="UXQ-Km-Ve6"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="WA3-BP-HrB" secondAttribute="bottom" id="VJw-U0-PcE"/>
+                            <constraint firstItem="kKa-D0-F8C" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" id="baQ-xI-1Ai"/>
+                            <constraint firstItem="WA3-BP-HrB" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="g6a-Ar-HMY"/>
+                            <constraint firstAttribute="trailing" secondItem="WA3-BP-HrB" secondAttribute="trailing" id="y9X-6P-d6H"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="4Ride Mobile" id="QQK-AJ-aE4"/>
+                    <connections>
+                        <outlet property="activeView" destination="gGq-ZX-clC" id="tsr-Xw-AbW"/>
+                        <outlet property="capacitySlider" destination="Ooh-rE-f71" id="xcE-AY-EQH"/>
+                        <outlet property="destinationBar" destination="b6e-Pi-jMG" id="W3g-br-bO6"/>
+                        <outlet property="driverDistance" destination="hEQ-1i-8jy" id="x9M-x5-PrQ"/>
+                        <outlet property="driverName" destination="EQQ-LV-LLg" id="bPi-by-mwR"/>
+                        <outlet property="inactiveView" destination="1Jk-kH-xXt" id="Iik-oC-y7v"/>
+                        <outlet property="mapView" destination="WA3-BP-HrB" id="80N-bJ-Ase"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1202" y="355"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="KYp-RU-fG6">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="3IM-eE-Fr1" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="hRK-YZ-EUU">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="UK4-Nk-qPR"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="DtQ-Ui-6Dm" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="390" y="355"/>
+        </scene>
+    </scenes>
+</document>

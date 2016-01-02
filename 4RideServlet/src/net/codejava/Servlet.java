@@ -178,6 +178,7 @@ public class Servlet extends HttpServlet {
         		
         		//get vehicle assignment
         		int assignment = pickupRequestHandler(originCoords, destinationCoords, passengers);
+        		//int assignment = 0;
         		
         		//if vehicle was assigned, send assignment to client app
         		if(assignment >= 0) {
