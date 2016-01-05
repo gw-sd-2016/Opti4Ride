@@ -336,7 +336,13 @@ public class Servlet extends HttpServlet {
 			
 			//get all current itinerary items
 			Map<String, Map<String, Integer>> graph = new HashMap<String, Map<String, Integer>>();
-			graph.putAll(v.getGraph());		
+
+			for(String key : v.getGraph().keySet()) {
+				HashMap<String, Integer> tempMap = new HashMap<String, Integer>();
+				tempMap.putAll(v.getGraph().get(key));
+				graph.put(key, tempMap);
+			}
+			
 			String[] itineraryLocs = graph.keySet().toArray(new String[graph.keySet().size()]);
 
 			//get new itinerary items from request
@@ -379,9 +385,9 @@ public class Servlet extends HttpServlet {
     			for(int j=0; j<elements.length; j++) {
     				if(!newLocs[i].equals(allLocs[j])) {
     					if(v.getPriorities().get(allLocs[j]) == null)
-    						newNodes.get(i).put(allLocs[j], (int)(0.25*(elements[j].distance.inMeters/1000) + 0.75*(10-newPriority)));
+    						newNodes.get(i).put(allLocs[j], (int)(0.5*(elements[j].distance.inMeters/100) + 0.5*(newPriority*10)));
     					else
-    						newNodes.get(i).put(allLocs[j], (int)(0.25*(elements[j].distance.inMeters/1000) + 0.75*(10-v.getPriorities().get(allLocs[j]))));
+    						newNodes.get(i).put(allLocs[j], (int)(0.5*(elements[j].distance.inMeters/100) + 0.5*(v.getPriorities().get(allLocs[j])*10)));
     				}
     			}
     			graph.put(newLocs[i], newNodes.get(i));
@@ -392,8 +398,7 @@ public class Servlet extends HttpServlet {
     			newNodes.add(new HashMap<String, Integer>());
     			elements = rows[i].elements;
     			for(int j=0; j<elements.length; j++)	
-    				graph.get(itineraryLocs[i]).put(newLocs[j], (int)(0.25*(elements[j].distance.inMeters/1000) + 0.75*(10-newPriority)));
-
+    				graph.get(itineraryLocs[i]).put(newLocs[j], (int)(0.5*(elements[j].distance.inMeters/100) + 0.5*(newPriority*10)));
     		}
     		
     		updatedGraphs.add(graph);	
@@ -416,6 +421,7 @@ public class Servlet extends HttpServlet {
     		String[] itLocs = updatedGraphs.get(i).keySet().toArray(new String[updatedGraphs.get(i).keySet().size()]);
     		
     		/*
+    		//print current graph
     		System.out.println("New Graph:");
     		for(String s : itLocs) {
     			System.out.println(s);
@@ -434,30 +440,10 @@ public class Servlet extends HttpServlet {
     			(currentTour = optimalTour(vehicles[i].getGraph().size(), vehicles[i].getGraph(), it))) < minTourDifference) 
     		{
     			if(vehicles[i].getCurrentCapacity() > 0 && (vehicles[i].getCapacity()-vehicles[i].getCurrentCapacity() >= passengers)) {
-    				System.out.println("Assigned Vehicle: " + vehicles[i].getDriverName());
-    				System.out.println("Original capacity: 4");
-	    			System.out.println("New capacity: " + (vehicles[i].getCapacity()-vehicles[i].getCurrentCapacity()));
 	    			minTourDifference = newTour - currentTour;
+	    			System.out.println("Current:" + currentTour + ", New: " + newTour);
 	    			itinerary = it;
 	    			vehicleAssignment = i;
-	    			vehicles[i].addPassengers(passengers);
-	    			System.out.println("Change in min tour = " + minTourDifference);
-	    			System.out.println("Saved " + maxTour + "!");
-	    			System.out.println("New Itinerary:");
-	    			vehicles[i].setItinerary(printOptimalTour(itinerary));
-	    			
-	    			//set node's priority for vehicle
-	    			int newPriority = -1;
-	    			Entry<String, Integer> maxPriority = null;
-	    			for(Entry<String,Integer> entry : vehicles[i].getPriorities().entrySet()) {
-	    			    if (maxPriority == null || entry.getValue() > maxPriority.getValue())
-	    			    	maxPriority = entry;
-	    			}
-	    			newPriority = maxPriority.getValue() + 1;
-	    			System.out.println("Priority: " + newPriority);
-	    			vehicles[i].setPriority(originAddress, newPriority);
-	    			vehicles[i].setPriority(destinationAddress, newPriority);
-	    			break;
     			}
     			else {
     				return -1;
@@ -467,6 +453,29 @@ public class Servlet extends HttpServlet {
     			//maxTour = newTour;
     		}
 		}
+		
+		System.out.println("Assigned Vehicle: " + vehicles[vehicleAssignment].getDriverName());
+		System.out.println("Original capacity: 4");
+		System.out.println("New capacity: " + (vehicles[vehicleAssignment].getCapacity()-vehicles[vehicleAssignment].getCurrentCapacity()));
+		
+		vehicles[vehicleAssignment].addPassengers(passengers);
+		System.out.println("Change in min tour = " + minTourDifference);
+		System.out.println("Saved " + maxTour + "!");
+		System.out.println("Updated Itinerary:");
+		vehicles[vehicleAssignment].setItinerary(printOptimalTour(itinerary));
+		vehicles[vehicleAssignment].setGraph(updatedGraphs.get(vehicleAssignment));
+		
+		//set node's priority for vehicle
+		int newPriority = -1;
+		Entry<String, Integer> maxPriority = null;
+		for(Entry<String,Integer> entry : vehicles[vehicleAssignment].getPriorities().entrySet()) {
+		    if (maxPriority == null || entry.getValue() > maxPriority.getValue())
+		    	maxPriority = entry;
+		}
+		newPriority = maxPriority.getValue() + 1;
+		System.out.println("Priority: " + newPriority);
+		vehicles[vehicleAssignment].setPriority(originAddress, newPriority);
+		vehicles[vehicleAssignment].setPriority(destinationAddress, newPriority);
 		
 		return vehicleAssignment;
 
