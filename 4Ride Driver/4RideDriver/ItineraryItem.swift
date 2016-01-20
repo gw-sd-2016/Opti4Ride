@@ -13,14 +13,16 @@ class ItineraryItem {
     // MARK: Properties
     
     var photo: UIImage?
+    var shortAddress: String
     var address: String
     var location: CLLocationCoordinate2D
 
     // MARK: Initialization
     
-    init?(photo: UIImage?, address: String, location: CLLocationCoordinate2D) {
+    init?(photo: UIImage?, shortAddress: String, address: String, location: CLLocationCoordinate2D) {
         // Initialize stored properties.
         self.photo = photo
+        self.shortAddress = shortAddress
         self.address = address
         self.location = location
         

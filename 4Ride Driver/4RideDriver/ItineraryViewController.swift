@@ -18,10 +18,14 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
     let locationManager = CLLocationManager()
     var currentLocation = CLLocationCoordinate2D()
     @IBOutlet var distanceReading: UITableView!
+    var driverName = String()
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //set driver
+        self.driverName = "Mr. Smith"
         
         //enable CoreLocation services
         self.locationManager.delegate = self
@@ -37,7 +41,7 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
     }
     
     func itineraryUpdate() {
-      //loadItinerary()
+      loadItinerary()
     }
     
     func loadItinerary() {
@@ -48,6 +52,7 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
         //paramaters that adhere to itinerary load request protocol
         let paras = [
             "DeviceType": "Driver",
+            "RequestType": "LoadItinerary"
         ]
         
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
@@ -63,7 +68,7 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
                 
                 //for each itinerary item, save as itinerary item
                 //pass this itinerary item to the graph and reload
-                for var index=0; index<3; index++ {
+                for var index=0; index<itinerary!.count; index++ {
                     
                     let destinationAddress = itinerary![index]
                     var destinationCoords = CLLocationCoordinate2D()
@@ -85,7 +90,8 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
                         let addressArray = String(destinationAddress).componentsSeparatedByString(",")
 
                         let meal = ItineraryItem(photo: UIImage(named: "defaultPhoto")!,
-                            address: String(addressArray[0]),
+                            shortAddress: String(addressArray[0]),
+                            address: String(destinationAddress),
                             location: destinationCoords)
                 
                         self.itItems.append(meal!)
@@ -114,6 +120,8 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
 
     //convert itinerary item to table cell and reload
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        tableView.allowsSelection = true;
+        
         // Table view cells are reused and should be dequeued using a cell identifier.
         let cellIdentifier = "MealTableViewCell"
         let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! ItineraryTableViewCell
@@ -121,13 +129,70 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
         // Fetches the appropriate meal for the data source layout.
         let itItem = itItems[indexPath.row]
         
-        cell.nameLabel.text = itItem.address
+        cell.nameLabel.text = itItem.shortAddress
         cell.photoImageView.image = itItem.photo
         cell.distance.text = distanceTo(itItem.location)
         
         //cell.backgroundColor = UIColor.greenColor()
         
         return cell
+    }
+    
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        let alertView = UIAlertController(title: "Service Complete!", message: "Proceed to next destination.", preferredStyle: .Alert)
+        alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+        self.presentViewController(alertView, animated: true, completion: nil)
+        
+        //get destination coordinates from address input, issue request
+        CLGeocoder().geocodeAddressString(itItems[indexPath.row].address) { (placemark, error) -> Void in
+            
+            print(self.itItems[indexPath.row].address)
+            var destination = CLLocationCoordinate2D()
+            
+            if error != nil
+            {
+                print("Error: " + error!.localizedDescription, terminator: "\n")
+                return
+            }
+            
+            if placemark!.count > 0
+            {
+                let pm = placemark![0] as! CLPlacemark
+                destination = CLLocationCoordinate2DMake(pm.location!.coordinate.latitude, pm.location!.coordinate.longitude)
+            }
+            
+            //parameters needed for completion request protocol
+            let paras = [
+                "DeviceType": "Driver",
+                "RequestType": "CompletionRequest",
+                "DriverName": self.driverName,
+                "PassengerCount": String(2),
+                "Destination": String(self.itItems[indexPath.row].address)
+            ]
+            
+            //issue completion request
+            Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
+                .response { request, response, data, error in
+                    //print(response)
+                    print(data)
+                    
+                    let json = JSON(data: data!)
+                    print(json)
+                    
+                    //if completion request successful, return to inactive state
+                    if(String(json[0]) == "Request Completion Successful") {
+                        self.loadItinerary()
+                    }
+                        //if competion request unsuccessful, alert user
+                    else {
+                        let alertView = UIAlertController(title: "Completion Request Error", message: "Our server was unable to service your request at this time.", preferredStyle: .Alert)
+                        alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                        self.presentViewController(alertView, animated: true, completion: nil)
+                    }
+            }
+            
+        }
+
     }
     
     //set current location to last updated location
