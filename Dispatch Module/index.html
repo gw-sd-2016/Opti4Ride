@@ -8,10 +8,13 @@
 
 	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
 	<link rel="stylesheet" href="leaflet-routing-machine-2.6.2/css/leaflet-routing-machine.css" />
+
 	<script src="jquery.js"></script>
 	<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
 	<script src="leaflet-routing-machine-2.6.2/dist/leaflet-routing-machine.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+	<script src="http://www.mapquestapi.com/sdk/leaflet/v2.s/mq-map.js?key=Tj4VSXek5VsluA3NxlKokpN79PvlK2EQ"></script>
+	<script src="http://www.mapquestapi.com/sdk/leaflet/v2.s/mq-geocoding.js?key=Tj4VSXek5VsluA3NxlKokpN79PvlK2EQ"></script>
 </head>
 <body>
 	<h1>4-RIDE Dispatch Module</h1>
@@ -19,7 +22,14 @@
 
 	<script>
 
-		var map = L.map('map').setView(new L.LatLng(38.899570, -77.047802), 15);
+		var vanIcon = L.icon({
+		    iconUrl: 'leaflet/images/van_icon.png',
+		    iconSize: [50, 25] // size of the icon
+		});
+
+		var map = L.map('map', {
+			layers: MQ.mapLayer()
+		}).setView(new L.LatLng(38.899570, -77.047802), 15);
 
 		L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmZpdHptb3JyaXMiLCJhIjoiY2lrMWxuaWRrMzk5dnZ0bHo0azRnZ204MyJ9.uwX0V-kXg3G6dXcs4r3v5Q', {
 			maxZoom: 18,
@@ -29,83 +39,102 @@
 			id: 'mapbox.streets'
 		}).addTo(map);
 
-		$.getJSON( "http://localhost:8080/4RideServlet/Servlet", function( data ) {
-		  var items = [];
-		  var itCount = 0;
-		  var layers = [];
-		  var color = 0;
-		  geocoder = new google.maps.Geocoder();
+		L.Map.include({
+  			'clearLayers': function () {
+    			this.eachLayer(function (layer) {
+      				this.removeLayer(layer);
+    			}, this);
+  			}
+		});
 
-		  $.each( data, function( key1, val ) {
+		setInterval("loadVehicleData()", 10000);
 
-		  	//if(key1 == 2) {
 
-		  	 $.each( val["itinerary"], function( key2, val ) {
-		  		var address = val;
+		function loadVehicleData() {
 
-		  		//if(itCount % 2 == 0) {
+			map.clearLayers();
 
-					geocoder.geocode( {address:address}, function(results, status) 
-					{
-					    if (status == google.maps.GeocoderStatus.OK) 
-					    {
+			L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmZpdHptb3JyaXMiLCJhIjoiY2lrMWxuaWRrMzk5dnZ0bHo0azRnZ204MyJ9.uwX0V-kXg3G6dXcs4r3v5Q', {
+				maxZoom: 18,
+				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+				'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+				id: 'mapbox.streets'
+			}).addTo(map);
 
-					    var currentAddress = data[key1]["itinerary"][key2];
-					    console.log("current address: " + currentAddress);
-					    var nextAddress = data[key1]["itinerary"][(key2+1)%data[0]["itinerary"].length];
-					    console.log("next address: " + nextAddress);
+			$.getJSON( "http://localhost:8080/4RideServlet/Servlet", function( data ) {
+			  var items = [];
+			  var itCount = 0;
+			  var layers = [];
+			  var color = 0;
+			  geocoder = new google.maps.Geocoder();
 
-					    var currentCoords = new L.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng());
+			  $.each( data, function( key1, val ) {
 
-					    geocoder.geocode( {address:nextAddress}, function(results2, status2) 
-						{
+			  	//if(key1 == 2) {
 
-						    if (status2 == google.maps.GeocoderStatus.OK) 
-						    {
+			  	 $.each( val["itinerary"], function( key2, val ) {
+
+			  		var address = val;
+			  		//if(itCount % 2 == 0) {
+
+						MQ.geocode().search(address).on('success', function(e) {
+
+							var best = e.result.best
+
+						    var currentAddress = data[key1]["itinerary"][key2];
+						    console.log("current address: " + currentAddress);
+						    var nextAddress = data[key1]["itinerary"][(key2+1)%data[0]["itinerary"].length];
+						    console.log("next address: " + nextAddress);
+
+						    var currentCoords = best.latlng;
+
+						    MQ.geocode().search(nextAddress).on('success', function(e) {
+
+								var best = e.result.best
+								var nextCoords = best.latlng;
+
+								/*
+						    		var tempMarker = L.marker(best.latlng);
+						    		tempMarker.bindPopup("<b>" + data[key1]["driverName"] + "</b><br />Stop #:" + (key2+1)).openPopup();
+						    		tempMarker.addTo(map);
+								*/
+
+						    	L.Routing.control({
+		  							waypoints: [
+		    							currentCoords,
+		    							nextCoords
+		  							],
+		  							lineOptions: {
+							            styles: [
+							            {color: getColor(key1%4), opacity: 1, weight: 3}
+							            ]
+	           						},
+	           						show: false
+								}).addTo(map);
+
+				    		});	
 
 							/*
-					    		var tempMarker = L.marker(new L.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng()));
+					    		var tempMarker = L.marker(best.latlng);
 					    		tempMarker.bindPopup("<b>" + data[key1]["driverName"] + "</b><br />Stop #:" + (key2+1)).openPopup();
 					    		tempMarker.addTo(map);
-							*/
+					    	*/
 
-							var nextCoords = new L.LatLng(results2[0].geometry.location.lat(), results2[0].geometry.location.lng());
+				    	});	
+					//}
+					//itCount++;
 
-					    	L.Routing.control({
-	  							waypoints: [
-	    							currentCoords,
-	    							nextCoords
-	  							],
-	  							lineOptions: {
-						            styles: [
-						            {color: getColor(key1%4), opacity: 1, weight: 3}
-						            ]
-           						},
-           						show: false
-							}).addTo(map);
+					var vehicleMarker = L.marker(new L.LatLng(data[key1]["location"][0], data[key1]["location"][1]), {icon: vanIcon});
+					vehicleMarker.bindPopup("<b>" + data[key1]["driverName"] + "</b>").openPopup();
+					vehicleMarker.addTo(map);		
 
-						    } else {
-						      alert('Geocode was not successful for the following reason: ' + status2);
-						    }
-			    		});	
-
-						/*
-				    		var tempMarker = L.marker(new L.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng()));
-				    		tempMarker.bindPopup("<b>" + data[key1]["driverName"] + "</b><br />Stop #:" + (key2+1)).openPopup();
-				    		tempMarker.addTo(map);
-				    	*/
-
-					    } else {
-					      alert('Geocode was not successful for the following reason: ' + status);
-					    }
-			    	});	
+			  	 });
 				//}
-				//itCount++;
-		  	 });
-			//}
 
-		  });
-		});
+			  });
+			});
+		}
 
 		function codeAddress(address) 
 		{

@@ -35,7 +35,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
     //set default region displayed on map (GWU Foggy Bottom Campus)
     func setDefaultRegion() {
         
-        let location = CLLocationCoordinate2D(latitude: 38.899571, longitude: -77.048275)
+        let location = CLLocationCoordinate2D(latitude: 38.898322, longitude: -77.048451)
         let region = MKCoordinateRegionMakeWithDistance(location, 1000.0, 1400.0)
         mapView.setRegion(region, animated: true)
         
