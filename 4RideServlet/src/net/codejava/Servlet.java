@@ -36,7 +36,8 @@ import java.util.Set;
 @WebServlet("/Servlet")
 public class Servlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private Map<String, double[]> locationKeyMap;
+	private Map<String, String[]> geocodeCache;
+	private Map<String[], String> reverseGeocodeCache;
 	private Vehicle[] vehicles;        
 	private GeoApiContext context;
 	private GeocodingResult[] results;
@@ -50,7 +51,25 @@ public class Servlet extends HttpServlet {
         
         //connect to Google Maps API
         context = new GeoApiContext().setApiKey("AIzaSyCCi0xwG4nVccFDw5vTzkO_402Lg8CyGW4");
-        results = null;     
+        results = null;    
+        
+        //INITIALIZING geocode caches
+        geocodeCache = new HashMap<String, String[]>();
+        reverseGeocodeCache = new HashMap<String[], String>();
+      
+        geocodeCache.put("2350 H St NW, Washington, DC 20052, USA", new String[]{"38.899560", "-77.050960"});
+        geocodeCache.put("2135 F St NW, Washington, DC 20037, USA", new String[]{"38.897463", "-77.048100"});
+        geocodeCache.put("950 25th St NW, Washington, DC 20037, USA", new String[]{"38.902116", "-77.053486"});
+        geocodeCache.put("1957 E St NW, Washington, DC 20052, USA", new String[]{"38.896203", "-77.04415"});
+        geocodeCache.put("1837 M St NW, Washington, DC 20036, USA", new String[]{"38.905816", "-77.043080"});
+        geocodeCache.put("2400 M St NW, Washington, DC 20037, USA", new String[]{"38.904879", "-77.05190"});
+        
+        reverseGeocodeCache.put(new String[]{"38.899560", "-77.050960"}, "2350 H St NW, Washington, DC 20052, USA");
+        reverseGeocodeCache.put(new String[]{"38.897463", "-77.048100"}, "2135 F St NW, Washington, DC 20037, USA");
+        reverseGeocodeCache.put(new String[]{"38.902116", "-77.053486"}, "950 25th St NW, Washington, DC 20037, USA");
+        reverseGeocodeCache.put(new String[]{"38.896203", "-77.04415"}, "1957 E St NW, Washington, DC 20052, USA");
+        reverseGeocodeCache.put(new String[]{"38.905816", "-77.043080"}, "1837 M St NW, Washington, DC 20036, USA");
+        reverseGeocodeCache.put(new String[]{"38.904879", "-77.05190"}, "2400 M St NW, Washington, DC 20037, USA");        
         
         //INITIALIZING driver vehicle data (static until transportation services provides GPS data)
         
@@ -315,24 +334,33 @@ public class Servlet extends HttpServlet {
 		
 		System.out.println(originCoords[0] + "," + originCoords[1]);
 		
-		//reverse geocode origin and destination coordinates to address key
-		GeocodingResult[] results3 = null;
-		try 
-		{
-			results3 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(originCoords[0]), Float.parseFloat(originCoords[1]))).await();
-		} 
-		catch (Exception e) { e.printStackTrace(); }
+		String originAddress;
+		if((originAddress = reverseGeocodeCache.get(originCoords)) == null) {
+			//reverse geocode origin and destination coordinates to address key
+			GeocodingResult[] results3 = null;
+			try 
+			{
+				results3 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(originCoords[0]), Float.parseFloat(originCoords[1]))).await();
+			} 
+			catch (Exception e) { e.printStackTrace(); }
+			
+			originAddress = results3[0].formattedAddress;
+			geocodeCache.put(originAddress, originCoords);	
+			reverseGeocodeCache.put(originCoords, originAddress);	
+		}
 		
-		String originAddress = results3[0].formattedAddress;
-		GeocodingResult[] results4 = null;
-		
-		try 
-		{
-			results4 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(destinationCoords[0]), Float.parseFloat(destinationCoords[1]))).await();
-		} 
-		catch (Exception e) { e.printStackTrace(); }
-		
-		String destinationAddress = results4[0].formattedAddress;
+		String destinationAddress;
+		if((destinationAddress = reverseGeocodeCache.get(destinationCoords)) == null) {		
+			GeocodingResult[] results4 = null;	
+			try 
+			{
+				results4 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(destinationCoords[0]), Float.parseFloat(destinationCoords[1]))).await();
+			} 
+			catch (Exception e) { e.printStackTrace(); }
+			destinationAddress = results4[0].formattedAddress;
+			geocodeCache.put(destinationAddress, destinationCoords);
+			reverseGeocodeCache.put(destinationCoords, destinationAddress);
+		}
 		System.out.println(destinationAddress);
 		
 		ArrayList<Map<String, Map<String, Integer>>> updatedGraphs = new ArrayList<Map<String, Map<String, Integer>>>();
@@ -438,23 +466,34 @@ public class Servlet extends HttpServlet {
 		
 		//reverse geocode origin and destination coordinates to address key
 		String[] cancelResponse = new String[1];
-		GeocodingResult[] results = null;
-		try 
-		{
-			results = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(originCoords[0]), Float.parseFloat(originCoords[1]))).await();
-		} 
-		catch (Exception e) { e.printStackTrace(); }
+
+		String originAddress;
+		if((originAddress = reverseGeocodeCache.get(originCoords)) == null) {
+			//reverse geocode origin and destination coordinates to address key
+			GeocodingResult[] results3 = null;
+			try 
+			{
+				results3 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(originCoords[0]), Float.parseFloat(originCoords[1]))).await();
+			} 
+			catch (Exception e) { e.printStackTrace(); }
+			
+			originAddress = results3[0].formattedAddress;
+			geocodeCache.put(originAddress, originCoords);	
+			reverseGeocodeCache.put(originCoords, originAddress);	
+		}
 		
-		String originAddress = results[0].formattedAddress;
-		GeocodingResult[] results2 = null;
-		
-		try 
-		{
-			results2 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(destinationCoords[0]), Float.parseFloat(destinationCoords[1]))).await();
-		} 
-		catch (Exception e) { e.printStackTrace(); }
-		
-		String destinationAddress = results2[0].formattedAddress;
+		String destinationAddress;
+		if((destinationAddress = reverseGeocodeCache.get(destinationCoords)) == null) {		
+			GeocodingResult[] results4 = null;	
+			try 
+			{
+				results4 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(destinationCoords[0]), Float.parseFloat(destinationCoords[1]))).await();
+			} 
+			catch (Exception e) { e.printStackTrace(); }
+			destinationAddress = results4[0].formattedAddress;
+			geocodeCache.put(destinationAddress, destinationCoords);
+			reverseGeocodeCache.put(destinationCoords, destinationAddress);
+		}
 		
 		//find vehicle that cancellation request affects
 		for(Vehicle v : vehicles) {
@@ -523,23 +562,33 @@ public class Servlet extends HttpServlet {
 	protected String[] destinationChangeHandler(String[] oldDestinationCoords, String[] newDestinationCoords, String driverName) {
 		//reverse geocode coordinates to address key
 		String[] destinationChangeResponse = new String[1];
-		GeocodingResult[] results = null;
-		try 
-		{
-			results = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(oldDestinationCoords[0]), Float.parseFloat(oldDestinationCoords[1]))).await();
-		} 
-		catch (Exception e) { e.printStackTrace(); }
+		String oldDestinationAddress;
+		if((oldDestinationAddress = reverseGeocodeCache.get(oldDestinationCoords)) == null) {
+			//reverse geocode origin and destination coordinates to address key
+			GeocodingResult[] results3 = null;
+			try 
+			{
+				results3 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(oldDestinationCoords[0]), Float.parseFloat(oldDestinationCoords[1]))).await();
+			} 
+			catch (Exception e) { e.printStackTrace(); }
+			
+			oldDestinationAddress = results3[0].formattedAddress;
+			geocodeCache.put(oldDestinationAddress, oldDestinationCoords);	
+			reverseGeocodeCache.put(oldDestinationCoords, oldDestinationAddress);	
+		}
 		
-		String oldDestinationAddress = results[0].formattedAddress;
-		
-		GeocodingResult[] results2 = null;
-		try 
-		{
-			results2 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(newDestinationCoords[0]), Float.parseFloat(newDestinationCoords[1]))).await();
-		} 
-		catch (Exception e) { e.printStackTrace(); }
-		
-		String newDestinationAddress = results2[0].formattedAddress;
+		String newDestinationAddress;
+		if((newDestinationAddress = reverseGeocodeCache.get(newDestinationCoords)) == null) {		
+			GeocodingResult[] results4 = null;	
+			try 
+			{
+				results4 = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(newDestinationCoords[0]), Float.parseFloat(newDestinationCoords[1]))).await();
+			} 
+			catch (Exception e) { e.printStackTrace(); }
+			newDestinationAddress = results4[0].formattedAddress;
+			geocodeCache.put(newDestinationAddress, newDestinationCoords);
+			reverseGeocodeCache.put(newDestinationCoords, newDestinationAddress);
+		}
 		
 		//find vehicle with request completion
 		for(Vehicle v : vehicles) {

@@ -47,7 +47,7 @@
   			}
 		});
 
-		setInterval("loadVehicleData()", 10000);
+		setTimeout("loadVehicleData()", 10000);
 
 
 		function loadVehicleData() {
@@ -62,7 +62,10 @@
 				id: 'mapbox.streets'
 			}).addTo(map);
 
-			$.getJSON( "http://localhost:8080/4RideServlet/Servlet", function( data ) {
+			var postParams = {name: 'deviceType', value: 'DispatchViewer'};
+			//$.getJSON( "http://localhost:8080/4RideServlet/Servlet", function( data ) {
+				
+			$.post("http://localhost:8080/4RideServlet/Servlet", postParams, function(data, textStatus) {
 			  var items = [];
 			  var itCount = 0;
 			  var layers = [];
@@ -133,7 +136,7 @@
 				//}
 
 			  });
-			});
+			}, "json");
 		}
 
 		function codeAddress(address) 
