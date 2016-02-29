@@ -324,6 +324,46 @@ public class Servlet extends HttpServlet {
         		out.print(mapper.writeValueAsString(completionRequestResponse));
         	}
         }
+        else if (deviceType.equals("Dispatch")) {
+        	//determine request dispatcher is making
+            String requestType = request.getParameterValues("RequestType")[0];
+        	if(requestType.equals("LoadItineraryAddresses")) {
+        		//send all current vehicle info to its driver
+        		System.out.println(deviceType + " request");
+        		
+        		ArrayList<String[]> its = new ArrayList<String[]>();
+        		for(Vehicle v : vehicles)
+        				its.add(v.getItinerary());
+        		
+        		String vAssignment = mapper.writeValueAsString(its);
+        		out.print(vAssignment);
+        	}
+        	else if(requestType.equals("LoadItineraryCoords")) {
+        		//send all current vehicle info to its driver
+        		System.out.println(deviceType + " request");
+        		
+        		ArrayList<ArrayList<String[]>> its = new ArrayList<ArrayList<String[]>>();
+        		for(int i=0; i<vehicles.length; i++) {
+        			its.add(new ArrayList<String[]>());
+        			for(String it : vehicles[i].getItinerary()) 
+        				its.get(i).add(geocodeCache.get(it));
+        		}
+        		
+        		String vAssignment = mapper.writeValueAsString(its);
+        		out.print(vAssignment);
+        	}
+        	else if(requestType.equals("DriverLocations")) {
+        		//send all current vehicle info to its driver
+        		System.out.println(deviceType + " request");
+        		
+        		ArrayList<String[]> locs = new ArrayList<String[]>();
+        		for(Vehicle v : vehicles)
+        				locs.add(new String[]{"" + v.getLocation()[0], "" + v.getLocation()[1]});
+        		
+        		String vAssignment = mapper.writeValueAsString(locs);
+        		out.print(vAssignment);
+        	}
+        }
        
     }
 	
