@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,10 +30,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.maps.GeoApiContext;
+
 /**
  * Servlet implementation class Servlet
  */
-@WebServlet("/Servlet")
 public class Servlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Map<String, String[]> geocodeCache;
@@ -49,7 +50,7 @@ public class Servlet extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
         
-        //connect to Google Maps API
+      //connect to Google Maps API
         context = new GeoApiContext().setApiKey("AIzaSyCCi0xwG4nVccFDw5vTzkO_402Lg8CyGW4");
         results = null;    
         
@@ -162,18 +163,23 @@ public class Servlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+		// TODO Auto-generated method stub
+		//response.getWriter().append("Served at: ").append(request.getContextPath());
+		
         //return serialized snapshot of server (vehicles array)
         PrintWriter out = response.getWriter();
 		
-        ObjectMapper mapper = new ObjectMapper();
-        String vAssignment = mapper.writeValueAsString(vehicles);
-        out.print(vAssignment);
-        
+        //ObjectMapper mapper = new ObjectMapper();
+        //String vAssignment = mapper.writeValueAsString(vehicles);
+        //out.print(vAssignment);
+        out.print("working");
 	}
-	
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
+		// TODO Auto-generated method stub
 		//initialize out steam
         PrintWriter out = response.getWriter();
         //initialize serializer
@@ -188,53 +194,27 @@ public class Servlet extends HttpServlet {
             String requestType = request.getParameterValues("RequestType")[0];
             System.out.println(deviceType + " " + requestType + "request");
             
-        	if(requestType.equals("Pickup")) { 		
+        	if(requestType.equals("Pickup")) {
+        		
         		//parse remaining request values
-        		String[] cancelResponse = new String[1];
-        		if(request.getParameterMap().containsKey("Origin") &&
-        		   request.getParameterMap().containsKey("Destination") &&
-        		   request.getParameterMap().containsKey("Passengers")
-        		   )
-        		{
-	        		String[] originCoords = request.getParameterValues("Origin")[0].split("\\s+");
-	        		String[] destinationCoords = request.getParameterValues("Destination")[0].split("\\s+");
-	        		int passengers = (int) Float.parseFloat(request.getParameterValues("Passengers")[0]);
-	        		
-	        		//get vehicle assignment
-	        		int assignment = pickupRequestHandler(originCoords, destinationCoords, passengers);
-	        		//int assignment = 0;
-	        		
-	        		//if vehicle was assigned, send assignment to client app
-	        		if(assignment >= 0) {
-	        			String vAssignment = mapper.writeValueAsString(vehicles[assignment]);
-	        			out.print(vAssignment); 
-	        		}
-	        		//otherwise notify them that all vehicles are full
-	        		else {
-	        			out.print("max_capacity");
-	        		}
+        		String[] originCoords = request.getParameterValues("Origin")[0].split("\\s+");
+        		String[] destinationCoords = request.getParameterValues("Destination")[0].split("\\s+");
+        		int passengers = (int) Float.parseFloat(request.getParameterValues("Passengers")[0]);
+        		
+        		//get vehicle assignment
+        		int assignment = pickupRequestHandler(originCoords, destinationCoords, passengers);
+        		//int assignment = 0;
+        		
+        		//if vehicle was assigned, send assignment to client app
+        		if(assignment >= 0) {
+        			String vAssignment = mapper.writeValueAsString(vehicles[assignment]);
+        			out.print(vAssignment); 
+        		}
+        		//otherwise notify them that all vehicles are full
+        		else {
+        			out.print("max_capacity");
         		}
         		
-        	}
-        	if(requestType.equals("VehicleHasArrived")) {
-        		//parse remaining request parameters
-        		String[] hasArrivedResponse = new String[1];
-        		if(request.getParameterMap().containsKey("DriverName") &&
-        		   request.getParameterMap().containsKey("Origin")
-        		   )
-        		{
-        			String driverName = request.getParameterValues("DriverName")[0];
-            		String[] originCoords = request.getParameterValues("Origin")[0].split("\\s+");
-            		
-            		hasArrivedResponse = VehicleHasArrivedRequestHandler(originCoords, driverName);
-        		}
-        		else 
-        		{
-        			//if parameters do not conform to cancel protocol, notify client app
-        			hasArrivedResponse[0] = "'Has Arrived' request failed. Invalid request parameters.";
-        		}
-
-        		out.print(mapper.writeValueAsString(hasArrivedResponse));
         	}
         	else if(requestType.equals("Cancel")) {
         		
@@ -390,8 +370,7 @@ public class Servlet extends HttpServlet {
         		out.print(vAssignment);
         	}
         }
-       
-    }
+	}
 	
 	protected int pickupRequestHandler(String[] originCoords, String[] destinationCoords, int passengers) {
 		
@@ -526,41 +505,6 @@ public class Servlet extends HttpServlet {
 		
 		return vehicleAssignment;
 
-	}
-	
-	protected String[] VehicleHasArrivedRequestHandler(String[] originCoords, String driverName) {
-		String[] hasArrivedResponse = new String[1];
-		hasArrivedResponse[0] = "True";
-		
-		String originAddress;
-		if((originAddress = reverseGeocodeCache.get(originCoords)) == null) {
-			//reverse geocode origin and destination coordinates to address key
-			GeocodingResult[] results = null;
-			try 
-			{
-				results = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(originCoords[0]), Float.parseFloat(originCoords[1]))).await();
-			} 
-			catch (Exception e) { e.printStackTrace(); }
-			
-			originAddress = results[0].formattedAddress;
-			geocodeCache.put(originAddress, originCoords);	
-			reverseGeocodeCache.put(originCoords, originAddress);	
-		}
-		
-		for(Vehicle v : vehicles) {
-			if(v.getDriverName().equals(driverName)) {	
-				
-				String[] itinerary = v.getItinerary();
-				for(String loc : itinerary) {
-					if(loc.equals(originAddress))
-						hasArrivedResponse[0] = "False";
-					break;
-				}
-				
-			}
-		}
-		
-		return hasArrivedResponse;
 	}
 	
 	protected String[] cancelRequestHandler(String[] originCoords, String[] destinationCoords, String driverName, String passengerCount) {
@@ -932,6 +876,5 @@ public class Servlet extends HttpServlet {
 		//return itinerary
 		return itinerary.toArray(new String[itinerary.size()]);
 	}
-	
 
 }

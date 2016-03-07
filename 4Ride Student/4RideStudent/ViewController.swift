@@ -325,14 +325,51 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
                         //destination represented as red pin
                         self.showDirections(self.origin, dest: self.destination)
                         
-                        //switch to active view
+                        //switch to wait view
                         self.inactiveView.hidden = true
-                        self.activeView.hidden = false
+                        self.waitView.hidden = false
+                        
+                        var timer = NSTimer.scheduledTimerWithTimeInterval(10, target: self, selector: "waitForVehicleArrival", userInfo: nil, repeats: true)
                     }
             }
             
         }
     }
+    
+    func waitForVehicleArrival(timer: NSTimer) {
+        
+        //protocol parameters accepted by server
+        let paras = [
+            "DeviceType": "Student",
+            "RequestType": "VehicleHasArrived",
+            "DriverName": self.driverName.text!,
+            "Origin": String(self.origin.latitude) + " " + String(self.origin.longitude)
+        ]
+        //issue 'has arrived' request
+        Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
+            .response { request, response, data, error in
+                //print(response)
+                print(data)
+                    
+                let json = JSON(data: data!)
+                print(json)
+                    
+                //if early drop off successful, return to inactive state
+                if(String(json[0]) == "True") {
+                    //switch to active view
+                    self.waitView.hidden = true
+                    self.activeView.hidden = false
+                    timer.invalidate()
+                }
+                //if early drop off unsuccessful, alert user
+                else if(String(json[0]) == "Request failed") {
+                    let alertView = UIAlertController(title: "Vehical Arrival Check Error", message: "Our server was unable to check the status of your vehicle.", preferredStyle: .Alert)
+                    alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                    self.presentViewController(alertView, animated: true, completion: nil)
+                }
+        }
+    }
+    
 
     //issue cancellation request to server
     @IBAction func cancelRequest(sender: AnyObject) {
