@@ -553,8 +553,10 @@ public class Servlet extends HttpServlet {
 				String[] itinerary = v.getItinerary();
 				for(String loc : itinerary) {
 					if(loc.equals(originAddress))
+					{
 						hasArrivedResponse[0] = "False";
-					break;
+						break;
+					}
 				}
 				
 			}
@@ -834,43 +836,39 @@ public class Servlet extends HttpServlet {
 			D.get(nodes[i]).put(Arrays.toString(new String[0]), weights.get(nodes[i]).get(nodes[0]));
 		
 		//populate D with optimal tours of all subsets
-		for(int k=1; k<=(n-2); k++) 
-		{
-			for( String[] A : vMinusV1AsList ) 
-			{
+		for(int k=1; k<=(n-2); k++)
+			for( String[] A : vMinusV1AsList ) {
 				ArrayList<String> aAsList = new ArrayList<String>(Arrays.asList(A));
-				if(A.length == k && !aAsList.contains(nodes[0])) 
-				{	
-					for(int i=0; i<nodes.length;i++) 
-					{
-						//can just get rid of i=0 in loop...
-						if(i != 0 && !aAsList.contains(nodes[i])) 
-						{
+				
+				if(A.length == k && !aAsList.contains(nodes[0])) {		
+					for(int i=1; i<nodes.length;i++) {
+						if(!aAsList.contains(nodes[i])) {
+							
 							int dVal = Integer.MAX_VALUE;
 							String dValIndex = "";
-							for(int j=0; j<nodes.length;j++) 
-							{
-								if(aAsList.contains(nodes[j]))
-								{
+							
+							for(int j=0; j<nodes.length;j++) {
+								if(aAsList.contains(nodes[j])) {
 									aAsList.remove(nodes[j]);
 									String[] aMinusJ = aAsList.toArray(new String[aAsList.size()]);
-								
-									int tempVal;
-									if((tempVal = weights.get(nodes[i]).get(nodes[j]) + D.get(nodes[j]).get(Arrays.toString(aMinusJ))) <= dVal)
+						
+									int cachedDVal;
+									if((cachedDVal = weights.get(nodes[i]).get(nodes[j]) + D.get(nodes[j]).get(Arrays.toString(aMinusJ))) <= dVal)
 									{
-										dVal = tempVal;
+										dVal = cachedDVal;
 										dValIndex = nodes[j];
 									}
 									aAsList.add(nodes[j]);
 									Collections.sort(aAsList);
 								}
 							}
+							
 							D.get(nodes[i]).put(Arrays.toString(A), dVal);
 							paths.get(nodes[i]).put(Arrays.toString(A), dValIndex);
+							
 						}
 					}
 				}
-			}
 		}
 		
 		//calculate full optimal tour from D
@@ -878,28 +876,29 @@ public class Servlet extends HttpServlet {
 		String dValIndex = "";
 		ArrayList<String> nodesAsList = new ArrayList<String>(Arrays.asList(nodes));
 		nodesAsList.remove(nodes[0]);
+		
 		for(int j=1; j<nodes.length;j++) 
 		{
 			nodesAsList.remove(nodes[j]);
 			String[] nodesMinus1J = (String[])nodesAsList.toArray(new String[nodes.length-2]);
-
-			
-			int tempVal;
-			if((tempVal = (weights.get(nodes[0]).get(nodes[j]) + D.get(nodes[j]).get(Arrays.toString(nodesMinus1J)))) < dVal)
+	
+			int cachedDVal;
+			if((cachedDVal = (weights.get(nodes[0]).get(nodes[j]) + D.get(nodes[j]).get(Arrays.toString(nodesMinus1J)))) < dVal)
 			{
-				dVal = tempVal;
+				dVal = cachedDVal;
 				dValIndex = nodes[j];
 			}
 			nodesAsList.add(nodes[j]);
 			Collections.sort(nodesAsList);
 		}
+		
 		nodesList.remove(nodes[0]);
 		String[] nodesMinusV1 = nodesList.toArray(new String[nodesList.size()]);
 		D.put(nodes[0], new HashMap<String, Integer>());
 		D.get(nodes[0]).put(Arrays.toString(nodesMinusV1), dVal);
 		
 		paths.get(nodes[0]).put(Arrays.toString(nodesMinusV1), dValIndex);
-		System.out.println("P[" + nodes[0] + "][" + Arrays.toString(nodesMinusV1) +"] = " + dValIndex);
+		//System.out.println("P[" + nodes[0] + "][" + Arrays.toString(nodesMinusV1) +"] = " + dValIndex);
 		
 		//return min tour
 		return D.get(nodes[0]).get(Arrays.toString(nodesMinusV1));
@@ -913,11 +912,13 @@ public class Servlet extends HttpServlet {
 		ArrayList<String> itinerary = new ArrayList<String>();
 		Collections.sort(nodesList);
 		
-		String currentNode = nodesList.get(0);
-		String v1 = currentNode;
+		String v1 = nodesList.get(0);
 		itinerary.add(v1);
 		System.out.println(v1);
+		
+		String currentNode = v1;
 		nodesList.remove(currentNode);
+		
 		while(nodesList.isEmpty() != true) {
 			String nextNode = paths.get(currentNode).get(Arrays.toString(nodesList.toArray(new String[nodesList.size()])));
 			itinerary.add(nextNode);
@@ -926,6 +927,7 @@ public class Servlet extends HttpServlet {
 			Collections.sort(nodesList);
 			currentNode = nextNode;
 		}
+		
 		//itinerary.add(v1);
 		//System.out.println(v1);
 		

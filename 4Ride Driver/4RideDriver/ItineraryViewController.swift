@@ -14,11 +14,13 @@ import SwiftyJSON
 class ItineraryController: UITableViewController, CLLocationManagerDelegate {
     
     //initialize globals
+    @IBOutlet var distanceReading: UITableView!
+    
     var itItems = [ItineraryItem]()
     let locationManager = CLLocationManager()
     var currentLocation = CLLocationCoordinate2D()
-    @IBOutlet var distanceReading: UITableView!
     var driverName = String()
+    var itinerary: [JSON]?
     
 
     override func viewDidLoad() {
@@ -57,45 +59,46 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
         
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
-                //print(response)
-                //print(data)
                 
                 let json = JSON(data: data!)
                 print(json["itinerary"])
                 
+                self.itinerary = json["itinerary"].array
                 
-                let itinerary = json["itinerary"].array
-                
-                //for each itinerary item, save as itinerary item
-                //pass this itinerary item to the graph and reload
-                for var index=0; index<itinerary!.count; index++ {
+                if(self.itinerary != nil)
+                {
                     
-                    let destinationAddress = itinerary![index]
-                    var destinationCoords = CLLocationCoordinate2D()
+                    //for each itinerary item, save as itinerary item
+                    //pass this itinerary item to the graph and reload
+                    for var index=0; index<self.itinerary!.count; index++ {
                     
-                    CLGeocoder().geocodeAddressString(String(destinationAddress)) { (placemark, error) -> Void in
+                        let destinationAddress = self.itinerary![index]
+                        var destinationCoords = CLLocationCoordinate2D()
+                    
+                        CLGeocoder().geocodeAddressString(String(destinationAddress)) { (placemark, error) -> Void in
                         
-                        if error != nil
-                        {
-                            print("Error: " + error!.localizedDescription, terminator: "\n")
-                            return
-                        }
+                            if error != nil
+                            {
+                                print("Error: " + error!.localizedDescription, terminator: "\n")
+                                return
+                            }
                         
-                        if placemark!.count > 0
-                        {
-                            let pm = placemark![0] as! CLPlacemark
-                            destinationCoords = CLLocationCoordinate2D(latitude: pm.location!.coordinate.latitude, longitude: pm.location!.coordinate.longitude)
-                        }
+                            if placemark!.count > 0
+                            {
+                                let pm = placemark![0] as! CLPlacemark
+                                destinationCoords = CLLocationCoordinate2D(latitude: pm.location!.coordinate.latitude, longitude: pm.location!.coordinate.longitude)
+                            }
                         
-                        let addressArray = String(destinationAddress).componentsSeparatedByString(",")
+                            let addressArray = String(destinationAddress).componentsSeparatedByString(",")
 
-                        let meal = ItineraryItem(photo: UIImage(named: "defaultPhoto")!,
-                            shortAddress: String(addressArray[0]),
-                            address: String(destinationAddress),
-                            location: destinationCoords)
+                            let it = ItineraryItem(photo: UIImage(named: "defaultPhoto")!,
+                                shortAddress: String(addressArray[0]),
+                                address: String(destinationAddress),
+                                location: destinationCoords)
                 
-                        self.itItems.append(meal!)
-                        self.tableView.reloadData()
+                            self.itItems.append(it!)
+                            self.tableView.reloadData()
+                        }
                     }
                 }
         }
@@ -123,11 +126,14 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
         tableView.allowsSelection = true;
         
         // Table view cells are reused and should be dequeued using a cell identifier.
-        let cellIdentifier = "MealTableViewCell"
+        let cellIdentifier = "ItineraryTableViewCell"
         let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! ItineraryTableViewCell
+        cell.accessoryView = nil;
         
-        // Fetches the appropriate meal for the data source layout.
+        // Fetches the appropriate itinerary for the data source layout.
         let itItem = itItems[indexPath.row]
+        print(String(indexPath.row) + "\n")
+        print(itItem.shortAddress + "\n")
         
         cell.nameLabel.text = itItem.shortAddress
         cell.photoImageView.image = itItem.photo

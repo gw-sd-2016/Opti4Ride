@@ -1,10 +1,9 @@
 //
 //  AppDelegate.swift
-//  FoodTracker
+//  4Ride Driver
 //
-//  Created by Jane Appleseed on 5/23/15.
-//  Copyright © 2015 Apple Inc. All rights reserved.
-//  See LICENSE.txt for this sample’s licensing information.
+//  Created by Randy Fitzmorris on 9/20/15.
+//  Copyright © 2015 Randy Fitzmorris All rights reserved.
 //
 
 import UIKit

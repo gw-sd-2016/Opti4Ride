@@ -31,7 +31,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/usr/local/tomcat/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="/usr/local/tomcat8/lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="/Users/Fitzy112/Documents/workspace/4RideServlet/google-maps-services-0.1.9.jar"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>

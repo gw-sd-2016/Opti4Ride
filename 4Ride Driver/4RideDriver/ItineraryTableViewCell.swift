@@ -19,6 +19,11 @@ class ItineraryTableViewCell: UITableViewCell {
         super.awakeFromNib()
         // Initialization code
     }
+    
+    override func prepareForReuse() {
+        self.nameLabel.text = ""
+        self.distance.text = ""
+    }
 
     override func setSelected(selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)

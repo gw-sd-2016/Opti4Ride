@@ -15,13 +15,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
 
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var inactiveView: UIVisualEffectView!
+    @IBOutlet weak var waitView: UIVisualEffectView!
     @IBOutlet weak var activeView: UIVisualEffectView!
+    @IBOutlet weak var capacitySlider: UISlider!
     @IBOutlet weak var sliderValue: UILabel!
     @IBOutlet weak var destinationBar: UITextField!
     @IBOutlet weak var newDestinationBar: UITextField!
-    @IBOutlet weak var capacitySlider: UISlider!
     @IBOutlet weak var requestButton: UIButton!
-    @IBOutlet weak var waitView: UIVisualEffectView!
     @IBOutlet weak var driverName: UILabel!
     @IBOutlet weak var driverNameActive: UILabel!
     @IBOutlet weak var driverDistance: UILabel!
@@ -31,14 +31,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
     var currentLocation = CLLocationCoordinate2D()
     var origin = CLLocationCoordinate2D()
     var destination = CLLocationCoordinate2D()
+    var timer = NSTimer()
     
     //set default region displayed on map (GWU Foggy Bottom Campus)
     func setDefaultRegion() {
-        
         let location = CLLocationCoordinate2D(latitude: 38.898322, longitude: -77.048451)
         let region = MKCoordinateRegionMakeWithDistance(location, 1000.0, 1400.0)
         mapView.setRegion(region, animated: true)
-        
     }
     
     //clear all pins and overlays on map
@@ -98,9 +97,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
         self.mapView.showsTraffic = true
         self.mapView.showsScale = true
         
-        //hide active views, initialize with inactive view (no current request)
+        //hide active and wait views, initialize with inactive view (no current request)
         self.activeView.hidden = true
-        self.activeView.hidden = true
+        self.waitView.hidden = true
+        
         //load current in-service vehicles
         loadAllVehicles();
     }
@@ -116,8 +116,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
         //request all vehicles in service
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
-                //print(response)
-                //print(data)
                 
                 let json = JSON(data: data!)
                 //print(json)
@@ -182,13 +180,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
     
     func displayLocationInfo(placemark: CLPlacemark) {
         
-        //self.locationManager.stopUpdatingLocation()
-        
         print(placemark.locality, terminator: "\n")
         print(placemark.postalCode, terminator: "\n")
         print(placemark.administrativeArea, terminator: "\n")
         print(placemark.country, terminator: "\n")
-        
         
     }
     
@@ -264,7 +259,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
         CLGeocoder().geocodeAddressString(self.destinationBar.text!) { (placemark, error) -> Void in
             
             print(self.destinationBar.text)
-            
             if error != nil
             {
                 print("Error: " + error!.localizedDescription, terminator: "\n")
@@ -289,8 +283,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
             //issue pickup request
             Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
                 .response { request, response, data, error in
-                    //print(response)
-                    //print(data)
                     
                     let json = JSON(data: data!)
                     
@@ -329,14 +321,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
                         self.inactiveView.hidden = true
                         self.waitView.hidden = false
                         
-                        var timer = NSTimer.scheduledTimerWithTimeInterval(10, target: self, selector: "waitForVehicleArrival", userInfo: nil, repeats: true)
+                        self.timer = NSTimer.scheduledTimerWithTimeInterval(10, target: self, selector: "waitForVehicleArrival", userInfo: nil, repeats: true)
                     }
             }
             
         }
     }
     
-    func waitForVehicleArrival(timer: NSTimer) {
+    func waitForVehicleArrival() {
         
         //protocol parameters accepted by server
         let paras = [
@@ -348,20 +340,18 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
         //issue 'has arrived' request
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
-                //print(response)
-                print(data)
                     
                 let json = JSON(data: data!)
                 print(json)
                     
-                //if early drop off successful, return to inactive state
+                //if vehicle has arrived, return to inactive state
                 if(String(json[0]) == "True") {
                     //switch to active view
                     self.waitView.hidden = true
                     self.activeView.hidden = false
-                    timer.invalidate()
+                    self.timer.invalidate()
                 }
-                //if early drop off unsuccessful, alert user
+                //if 'has arrived' request fails, alert user
                 else if(String(json[0]) == "Request failed") {
                     let alertView = UIAlertController(title: "Vehical Arrival Check Error", message: "Our server was unable to check the status of your vehicle.", preferredStyle: .Alert)
                     alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
@@ -387,15 +377,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
         //issue cancellation request
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
-                //print(response)
-                print(data)
                 
                 let json = JSON(data: data!)
                 print(json)
                 
                 //if cancellation successful, return to inactive state
                 if(String(json[0]) == "Cancel Complete") {
-                    self.activeView.hidden = true
+                    self.waitView.hidden = true
                     self.inactiveView.hidden = false
                     self.clearMap()
                     self.loadAllVehicles()
@@ -432,8 +420,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
         //issue early exit request
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
-                //print(response)
-                print(data)
                 
                 let json = JSON(data: data!)
                 print(json)
@@ -457,9 +443,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
     
     func textFieldShouldReturn(textField: UITextField) -> Bool {
             textField.resignFirstResponder()
-            print("WORKED\n")
             return false
-        return true
     }
     
     @IBAction func destinationChangeHandler(sender: AnyObject) {
@@ -491,14 +475,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
                 "DriverName": self.driverName.text!,
                 "OldDestination": String(oldDestination.latitude) + " " + String(oldDestination.longitude),
                 "NewDestination": String(self.destination.latitude) + " " + String(self.destination.longitude),
-                
             ]
             
             //issue destination change request
             Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
                 .response { request, response, data, error in
-                    //print(response)
-                    print(data)
                     
                     let json = JSON(data: data!)
                     print(json)
@@ -509,15 +490,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
                         self.clearMap()
                         self.mapView.delegate = self
                         
-                        let vehicleLoc = CLLocationCoordinate2D(latitude: json["location"][0].doubleValue,
-                            longitude: json["location"][1].doubleValue)
+                        let vehicleLoc = CLLocationCoordinate2D(latitude: json["location"][0].doubleValue, longitude: json["location"][1].doubleValue)
                         
                         //show route from request's origin to destination
                         //origin represented as green pin
                         //destination represented as red pin
                         self.showDirections(self.origin, dest: self.destination)
                     }
-                        //if destination change unsuccessful, alert user
+                    //if destination change unsuccessful, alert user
                     else {
                         let alertView = UIAlertController(title: "Destination Change Error", message: "Our server was unable to service your request at this time.", preferredStyle: .Alert)
                         alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
