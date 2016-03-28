@@ -20,7 +20,8 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
     let locationManager = CLLocationManager()
     var currentLocation = CLLocationCoordinate2D()
     var driverName = String()
-    var itinerary: [JSON]?
+    var itineraryAddresses: [JSON]?
+    var itineraryCoords: [JSON]?
     
 
     override func viewDidLoad() {
@@ -50,58 +51,66 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
         
         //empty itinerary items array for each load
         self.itItems = [ItineraryItem]()
+        print(self.driverName)
     
         //paramaters that adhere to itinerary load request protocol
         let paras = [
             "DeviceType": "Driver",
-            "RequestType": "LoadItinerary"
+            "RequestType": "LoadItineraryAddresses",
+            "DriverName": self.driverName
         ]
         
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
                 
                 let json = JSON(data: data!)
-                print(json["itinerary"])
+                print(json)
+                self.itineraryAddresses = json.array
                 
-                self.itinerary = json["itinerary"].array
-                
-                if(self.itinerary != nil)
+                if(self.itineraryAddresses != nil)
                 {
                     
-                    //for each itinerary item, save as itinerary item
-                    //pass this itinerary item to the graph and reload
-                    for var index=0; index<self.itinerary!.count; index++ {
+                    //paramaters that adhere to itinerary load request protocol
+                    let paras = [
+                        "DeviceType": "Driver",
+                        "RequestType": "LoadItineraryCoords",
+                        "DriverName": self.driverName
+                    ]
                     
-                        let destinationAddress = self.itinerary![index]
-                        var destinationCoords = CLLocationCoordinate2D()
-                    
-                        CLGeocoder().geocodeAddressString(String(destinationAddress)) { (placemark, error) -> Void in
-                        
-                            if error != nil
+                    Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
+                        .response { request, response, data, error in
+                            
+                            let json = JSON(data: data!)
+                            print(json)
+                            
+                            self.itineraryCoords = json.array
+                            
+                            if(self.itineraryCoords != nil)
                             {
-                                print("Error: " + error!.localizedDescription, terminator: "\n")
-                                return
+                                
+                                //for each itinerary item, save as itinerary item
+                                //pass this itinerary item to the graph and reload
+                                for var index=0; index<self.itineraryCoords!.count; index++ {
+                                    
+                                    let destinationAddress = self.itineraryAddresses![index]
+                                    var destinationCoords = CLLocationCoordinate2D()
+                                    
+                                    destinationCoords = CLLocationCoordinate2D(latitude: Double(self.itineraryCoords![index].array![0].string!)!, longitude: Double(self.itineraryCoords![index].array![1].string!)!)
+                                    
+                                    let addressArray = String(destinationAddress).componentsSeparatedByString(",")
+                                        
+                                    let it = ItineraryItem(photo: UIImage(named: "defaultPhoto")!,
+                                        shortAddress: String(addressArray[0]),
+                                        address: String(destinationAddress),
+                                        location: destinationCoords)
+                                        
+                                    self.itItems.append(it!)
+                                    self.tableView.reloadData()
+                                    }
+                                }
                             }
-                        
-                            if placemark!.count > 0
-                            {
-                                let pm = placemark![0] as! CLPlacemark
-                                destinationCoords = CLLocationCoordinate2D(latitude: pm.location!.coordinate.latitude, longitude: pm.location!.coordinate.longitude)
-                            }
-                        
-                            let addressArray = String(destinationAddress).componentsSeparatedByString(",")
-
-                            let it = ItineraryItem(photo: UIImage(named: "defaultPhoto")!,
-                                shortAddress: String(addressArray[0]),
-                                address: String(destinationAddress),
-                                location: destinationCoords)
-                
-                            self.itItems.append(it!)
-                            self.tableView.reloadData()
-                        }
                     }
-                }
-        }
+            }
         
     }
 
@@ -173,7 +182,7 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
                 "RequestType": "CompletionRequest",
                 "DriverName": self.driverName,
                 "PassengerCount": String(2),
-                "Destination": String(self.itItems[indexPath.row].address)
+                "Destination": String(self.itItems[indexPath.row].location.latitude) + " " + String(self.itItems[indexPath.row].location.longitude)
             ]
             
             //issue completion request

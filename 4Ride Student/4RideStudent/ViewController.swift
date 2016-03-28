@@ -31,6 +31,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
     var currentLocation = CLLocationCoordinate2D()
     var origin = CLLocationCoordinate2D()
     var destination = CLLocationCoordinate2D()
+    var originAddress = String()
+    var destinationAddress = String()
     var timer = NSTimer()
     
     //set default region displayed on map (GWU Foggy Bottom Campus)
@@ -259,6 +261,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
         CLGeocoder().geocodeAddressString(self.destinationBar.text!) { (placemark, error) -> Void in
             
             print(self.destinationBar.text)
+            self.destinationAddress = self.destinationBar.text!
             if error != nil
             {
                 print("Error: " + error!.localizedDescription, terminator: "\n")
@@ -330,33 +333,40 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
     
     func waitForVehicleArrival() {
         
-        //protocol parameters accepted by server
-        let paras = [
-            "DeviceType": "Student",
-            "RequestType": "VehicleHasArrived",
-            "DriverName": self.driverName.text!,
-            "Origin": String(self.origin.latitude) + " " + String(self.origin.longitude)
-        ]
-        //issue 'has arrived' request
-        Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
-            .response { request, response, data, error in
+        if waitView.hidden == true
+        {
+            self.timer.invalidate()
+        }
+        else
+        {
+            //protocol parameters accepted by server
+            let paras = [
+                "DeviceType": "Student",
+                "RequestType": "VehicleHasArrived",
+                "DriverName": self.driverName.text!,
+                "Origin": String(self.origin.latitude) + " " + String(self.origin.longitude)
+            ]
+            //issue 'has arrived' request
+            Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
+                .response { request, response, data, error in
                     
-                let json = JSON(data: data!)
-                print(json)
+                    let json = JSON(data: data!)
+                    print(json)
                     
-                //if vehicle has arrived, return to inactive state
-                if(String(json[0]) == "True") {
-                    //switch to active view
-                    self.waitView.hidden = true
-                    self.activeView.hidden = false
-                    self.timer.invalidate()
-                }
-                //if 'has arrived' request fails, alert user
-                else if(String(json[0]) == "Request failed") {
-                    let alertView = UIAlertController(title: "Vehical Arrival Check Error", message: "Our server was unable to check the status of your vehicle.", preferredStyle: .Alert)
-                    alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-                    self.presentViewController(alertView, animated: true, completion: nil)
-                }
+                    //if vehicle has arrived, return to inactive state
+                    if(String(json[0]) == "True") {
+                        //switch to active view
+                        self.waitView.hidden = true
+                        self.activeView.hidden = false
+                        self.timer.invalidate()
+                    }
+                        //if 'has arrived' request fails, alert user
+                    else if(String(json[0]) == "Request failed") {
+                        let alertView = UIAlertController(title: "Vehical Arrival Check Error", message: "Our server was unable to check the status of your vehicle.", preferredStyle: .Alert)
+                        alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                        self.presentViewController(alertView, animated: true, completion: nil)
+                    }
+            }
         }
     }
     
@@ -400,21 +410,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
     
     @IBAction func earlyExitHandler(sender: AnyObject) {
         
-        var destination = String()
-        if(self.newDestinationBar == "Change Destination") {
-            destination = self.destinationBar.text!
-        }
-        else {
-            destination = self.newDestinationBar.text!
-        }
-        
         //parameters needed for early exit protocol
         let paras = [
             "DeviceType": "Student",
             "RequestType": "EarlyExit",
             "DriverName": self.driverName.text!,
             "PassengerCount": String(self.capacitySlider.value),
-            "Destination": String(destination)
+            "Destination": String(self.destination.latitude) + " " + String(self.destination.longitude)
         ]
         
         //issue early exit request
@@ -454,6 +456,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
         CLGeocoder().geocodeAddressString(self.newDestinationBar.text!) { (placemark, error) -> Void in
             
             print(self.newDestinationBar.text)
+            self.destinationAddress = self.newDestinationBar.text!
             
             if error != nil
             {

@@ -38,16 +38,27 @@ public class Servlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Map<String, String[]> geocodeCache;
 	private Map<String[], String> reverseGeocodeCache;
-	private Vehicle[] vehicles;        
+	private Vehicle[] vehicles;  
 	private GeoApiContext context;
 	private GeocodingResult[] results;
+	private HashMap<String, Boolean> isOrigin;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
     public Servlet() {
         super();
-        // TODO Auto-generated constructor stub
+        
+        //location type tracker
+        isOrigin = new HashMap<String, Boolean>();
+        
+        isOrigin.put("2350 H St NW, Washington, DC 20052, USA", true);
+        isOrigin.put("2135 F St NW, Washington, DC 20037, USA", true);
+        isOrigin.put("950 25th St NW, Washington, DC 20037, USA", true);
+        
+        isOrigin.put("1957 E St NW, Washington, DC 20052, USA", false);
+        isOrigin.put("1203 19th St NW, Washington, DC 20036, USA", false);
+        isOrigin.put("2400 M St NW, Washington, DC 20037, USA", false);
         
         //connect to Google Maps API
         context = new GeoApiContext().setApiKey("AIzaSyCCi0xwG4nVccFDw5vTzkO_402Lg8CyGW4");
@@ -57,19 +68,19 @@ public class Servlet extends HttpServlet {
         geocodeCache = new HashMap<String, String[]>();
         reverseGeocodeCache = new HashMap<String[], String>();
       
-        geocodeCache.put("2350 H St NW, Washington, DC 20052, USA", new String[]{"38.899560", "-77.050960"});
-        geocodeCache.put("2135 F St NW, Washington, DC 20037, USA", new String[]{"38.897463", "-77.048100"});
-        geocodeCache.put("950 25th St NW, Washington, DC 20037, USA", new String[]{"38.902116", "-77.053486"});
-        geocodeCache.put("1957 E St NW, Washington, DC 20052, USA", new String[]{"38.896203", "-77.04415"});
-        geocodeCache.put("1837 M St NW, Washington, DC 20036, USA", new String[]{"38.905816", "-77.043080"});
-        geocodeCache.put("2400 M St NW, Washington, DC 20037, USA", new String[]{"38.904879", "-77.05190"});
+        geocodeCache.put("2350 H St NW, Washington, DC 20052, USA", new String[]{"38.899328", "-77.051051"});
+        geocodeCache.put("2135 F St NW, Washington, DC 20037, USA", new String[]{"38.897805", "-77.047896"});
+        geocodeCache.put("950 25th St NW, Washington, DC 20037, USA", new String[]{"38.902133", "-77.053464"});
+        geocodeCache.put("1957 E St NW, Washington, DC 20052, USA", new String[]{"38.896110", "-77.043707"});
+        geocodeCache.put("1203 19th St NW, Washington, DC 20036, USA", new String[]{"38.905817", "-77.043129"});
+        geocodeCache.put("2400 M St NW, Washington, DC 20037, USA", new String[]{"38.904673", "-77.052028"});
         
-        reverseGeocodeCache.put(new String[]{"38.899560", "-77.050960"}, "2350 H St NW, Washington, DC 20052, USA");
-        reverseGeocodeCache.put(new String[]{"38.897463", "-77.048100"}, "2135 F St NW, Washington, DC 20037, USA");
-        reverseGeocodeCache.put(new String[]{"38.902116", "-77.053486"}, "950 25th St NW, Washington, DC 20037, USA");
-        reverseGeocodeCache.put(new String[]{"38.896203", "-77.04415"}, "1957 E St NW, Washington, DC 20052, USA");
-        reverseGeocodeCache.put(new String[]{"38.905816", "-77.043080"}, "1837 M St NW, Washington, DC 20036, USA");
-        reverseGeocodeCache.put(new String[]{"38.904879", "-77.05190"}, "2400 M St NW, Washington, DC 20037, USA");        
+        reverseGeocodeCache.put(new String[]{"38.899328", "-77.051051"}, "2350 H St NW, Washington, DC 20052, USA");
+        reverseGeocodeCache.put(new String[]{"38.897805", "-77.047896"}, "2135 F St NW, Washington, DC 20037, USA");
+        reverseGeocodeCache.put(new String[]{"38.902133", "-77.053464"}, "950 25th St NW, Washington, DC 20037, USA");
+        reverseGeocodeCache.put(new String[]{"38.896110", "-77.043707"}, "1957 E St NW, Washington, DC 20052, USA");
+        reverseGeocodeCache.put(new String[]{"38.905817", "-77.043129"}, "1203 19th St NW, Washington, DC 20036, USA");
+        reverseGeocodeCache.put(new String[]{"38.904673", "-77.052028"}, "2400 M St NW, Washington, DC 20037, USA");        
         
         //INITIALIZING driver vehicle data (static until transportation services provides GPS data)
         
@@ -97,10 +108,10 @@ public class Servlet extends HttpServlet {
         //vGraph 2
         Map<String, Integer> vG2_2400M = new HashMap<String, Integer>();
         vG2_2400M.put("1957 E St NW, Washington, DC 20052, USA", 20);
-        vG2_2400M.put("1837 M St NW, Washington, DC 20036, USA", 8);
+        vG2_2400M.put("1203 19th St NW, Washington, DC 20036, USA", 8);
         Map<String, Integer> vG2_EStreet = new HashMap<String, Integer>();
         vG2_EStreet.put("2400 M St NW, Washington, DC 20037, USA", 19);
-        vG2_EStreet.put("1837 M St NW, Washington, DC 20036, USA", 18);
+        vG2_EStreet.put("1203 19th St NW, Washington, DC 20036, USA", 18);
         Map<String, Integer> vG2_ChipotleOnM = new HashMap<String, Integer>();
         vG2_ChipotleOnM.put("2400 M St NW, Washington, DC 20037, USA", 9);
         vG2_ChipotleOnM.put("1957 E St NW, Washington, DC 20052, USA", 19);
@@ -108,12 +119,12 @@ public class Servlet extends HttpServlet {
         HashMap<String, Map<String, Integer>> vGraph2 = new HashMap<String, Map<String, Integer>>();
         vGraph2.put("2400 M St NW, Washington, DC 20037, USA", vG2_2400M);
         vGraph2.put("1957 E St NW, Washington, DC 20052, USA", vG2_EStreet);
-        vGraph2.put("1837 M St NW, Washington, DC 20036, USA", vG2_ChipotleOnM);
+        vGraph2.put("1203 19th St NW, Washington, DC 20036, USA", vG2_ChipotleOnM);
         
         Map<String, Integer> vP2 = new HashMap<String, Integer>();
         vP2.put("2400 M St NW, Washington, DC 20037, USA", 1);
         vP2.put("1957 E St NW, Washington, DC 20052, USA", 2);
-        vP2.put("1837 M St NW, Washington, DC 20036, USA", 2);
+        vP2.put("1203 19th St NW, Washington, DC 20036, USA", 2);
         
         //vGraph 3
         Map<String, Integer> vG3_Claridge = new HashMap<String, Integer>();
@@ -148,7 +159,7 @@ public class Servlet extends HttpServlet {
         vehicles[0].setItinerary(itinerary1);
         
         String[] itinerary2 = { "1957 E St NW, Washington, DC 20052, USA", 
-        						"1837 M St NW, Washington, DC 20036, USA", 
+        						"1203 19th St NW, Washington, DC 20036, USA", 
         						"2400 M St NW, Washington, DC 20037, USA", };
         vehicles[1].setItinerary(itinerary2);
         
@@ -272,7 +283,7 @@ public class Servlet extends HttpServlet {
         		{
         			String driverName = request.getParameterValues("DriverName")[0];
         			String passengerCount = request.getParameterValues("PassengerCount")[0];
-        			String destination = request.getParameterValues("Destination")[0];
+        			String[] destination = request.getParameterValues("Destination")[0].split("\\s+");
             		
             		earlyExitResponse = requestCompletionHandler(destination, driverName, passengerCount);
         		}
@@ -327,6 +338,64 @@ public class Servlet extends HttpServlet {
         		String vAssignment = mapper.writeValueAsString(vehicles[1]);
         		out.print(vAssignment);
         	}
+        	else if(requestType.equals("LoadItineraryAddresses")) {
+        		
+        		String[] loadItAddressResponse = new String[1];
+        		if(request.getParameterMap().containsKey("DriverName"))
+             		{
+             			String driverName = request.getParameterValues("DriverName")[0];
+                 		
+                		//send all current vehicle info to its driver
+                		System.out.println(deviceType + " request");
+                		
+                		String[] it = {};
+                		for(Vehicle v : vehicles)
+                		{
+                			if(v.getDriverName().equals(driverName))
+                				it = v.getItinerary();
+                		}
+                		
+                		String vAssignment = mapper.writeValueAsString(it);
+                		System.out.println(vAssignment);
+                		out.print(vAssignment);
+             		}
+             		else 
+             		{
+             			//if parameters do not conform to cancel protocol, notify client app
+             			loadItAddressResponse[0] = "Get Itinerary (Addresses) failed. Invalid request parameters.";
+                 		out.print(mapper.writeValueAsString(loadItAddressResponse));
+             		}
+        	}
+        	else if(requestType.equals("LoadItineraryCoords")) {
+        		
+        		String[] loadItCoordsResponse = new String[1];
+        		if(request.getParameterMap().containsKey("DriverName"))
+             		{
+             			String driverName = request.getParameterValues("DriverName")[0];
+                 		
+             			//send all current vehicle info to its driver
+                		System.out.println(deviceType + " request");
+                		
+                		ArrayList<String[]> it = new ArrayList<String[]>();
+                		for(int i=0; i<vehicles.length; i++) 
+                		{
+                			if(vehicles[i].getDriverName().equals(driverName))
+                			{
+                				for(String address : vehicles[i].getItinerary()) 
+                					it.add(geocodeCache.get(address));
+                			}
+                		}
+                		
+                		String vAssignment = mapper.writeValueAsString(it);
+                		out.print(vAssignment);
+             		}
+             		else 
+             		{
+             			//if parameters do not conform to cancel protocol, notify client app
+             			loadItCoordsResponse[0] = "Get Itinerary (Coordinates) failed. Invalid request parameters.";
+                 		out.print(mapper.writeValueAsString(loadItCoordsResponse));
+             		}
+        	}
         	else if(requestType.equals("CompletionRequest")) {
         		//parse remaining request parameters
         		String[] completionRequestResponse = new String[1];
@@ -337,7 +406,7 @@ public class Servlet extends HttpServlet {
         		{
         			String driverName = request.getParameterValues("DriverName")[0];
         			String passengerCount = request.getParameterValues("PassengerCount")[0];
-            		String destination = request.getParameterValues("Destination")[0];
+            		String[] destination = request.getParameterValues("Destination")[0].split("\\s+");
             		
             		completionRequestResponse = requestCompletionHandler(destination, driverName, passengerCount);
         		}
@@ -376,6 +445,7 @@ public class Servlet extends HttpServlet {
         		}
         		
         		String vAssignment = mapper.writeValueAsString(its);
+        		System.out.println(vAssignment);
         		out.print(vAssignment);
         	}
         	else if(requestType.equals("DriverLocations")) {
@@ -411,6 +481,7 @@ public class Servlet extends HttpServlet {
 			catch (Exception e) { e.printStackTrace(); }
 			
 			originAddress = results3[0].formattedAddress;
+			isOrigin.put(originAddress, true);
 			geocodeCache.put(originAddress, originCoords);	
 			reverseGeocodeCache.put(originCoords, originAddress);	
 		}
@@ -424,6 +495,7 @@ public class Servlet extends HttpServlet {
 			} 
 			catch (Exception e) { e.printStackTrace(); }
 			destinationAddress = results4[0].formattedAddress;
+			isOrigin.put(destinationAddress, false);
 			geocodeCache.put(destinationAddress, destinationCoords);
 			reverseGeocodeCache.put(destinationCoords, destinationAddress);
 		}
@@ -434,8 +506,7 @@ public class Servlet extends HttpServlet {
 		//for all vehicles, add origin and destination points to graph
 		//compute edge weights between all existing nodes to origin/destination node based on weighting factors
 		//edge weights represent how difficult it is to travel from any node A to B, relative to other edges
-		for(Vehicle v : vehicles) {
-			
+		for(Vehicle v : vehicles) {		
 			//get all current itinerary items
 			Map<String, Map<String, Integer>> graph = new HashMap<String, Map<String, Integer>>();
 
@@ -452,7 +523,6 @@ public class Servlet extends HttpServlet {
 		}
 		
 		//for each vehicle, compute optimal tour with request locations added to the graph
-		
 		int minTourDifference = Integer.MAX_VALUE;
 		int maxTour = 5;
 		Map<String, Map<String, String>> itinerary = null;
@@ -492,9 +562,8 @@ public class Servlet extends HttpServlet {
 	    			itinerary = it;
 	    			vehicleAssignment = i;
     			}
-    			else {
+    			else
     				return -1;
-    			}
     		}
     		if(maxTour < newTour) {
     			//maxTour = newTour;
@@ -627,18 +696,32 @@ public class Servlet extends HttpServlet {
 		return cancelResponse;	
 	}
 	
-	protected String[] requestCompletionHandler(String destination, String driverName, String passengerCount) {
-		//reverse geocode coordinates to address key
+	protected String[] requestCompletionHandler(String[] destination, String driverName, String passengerCount) {
+
 		String[] completionResponse = new String[1];
 		
-		System.out.println("THIS ADDRESS: " + destination);
+		//reverse geocode coordinates to address key
+		String destinationAddress;
+		if((destinationAddress = reverseGeocodeCache.get(destination)) == null) {		
+			GeocodingResult[] results = null;	
+			try 
+			{
+				results = GeocodingApi.reverseGeocode(context, new LatLng(Float.parseFloat(destination[0]), Float.parseFloat(destination[1]))).await();
+			} 
+			catch (Exception e) { e.printStackTrace(); }
+			destinationAddress = results[0].formattedAddress;
+			geocodeCache.put(destinationAddress, destination);
+			reverseGeocodeCache.put(destination, destinationAddress);
+		}
+		
+		System.out.println("THIS ADDRESS: " + destinationAddress);
 		
 		//find vehicle with request completion
 		for(Vehicle v : vehicles) {
 			if(v.getDriverName().equals(driverName)) {
 				
 				System.out.println("THIS VEHICLE: " + v);
-				removeLocation(v, destination);
+				removeLocation(v, destinationAddress);
 				
 				//add capacity back to vehicle
 				int passengers;
@@ -648,7 +731,8 @@ public class Servlet extends HttpServlet {
 			    	completionResponse[0] = "Request Completion Failed: Passenger count must be an integer.";
 			    	break;
 			    }
-			    v.setCurrentCapacity(v.getCurrentCapacity() + passengers);
+			    if(isOrigin.get(destinationAddress) == false)
+			    	v.setCurrentCapacity(v.getCurrentCapacity() + passengers);
 			    
 				completionResponse[0] = "Request Completion Successful";	
 				break;
@@ -689,6 +773,7 @@ public class Servlet extends HttpServlet {
 			} 
 			catch (Exception e) { e.printStackTrace(); }
 			newDestinationAddress = results4[0].formattedAddress;
+			isOrigin.put(newDestinationAddress, false);
 			geocodeCache.put(newDestinationAddress, newDestinationCoords);
 			reverseGeocodeCache.put(newDestinationCoords, newDestinationAddress);
 		}
@@ -769,7 +854,18 @@ public class Servlet extends HttpServlet {
 		}
 	}
 	
-	protected void removeLocation(Vehicle v, String address) {
+	protected void removeLocation(Vehicle v, String a) {
+		
+		//set address to be removed
+		String address = a;
+		
+		//if a is only a substring of address in graph, update address accordingly 
+		for(String s : v.getGraph().keySet()) {
+			String[] addressSplit = s.split(",");
+			if(Arrays.asList(addressSplit).contains(a))
+				address = s;
+		}
+		
 		//remove address node from graph (and all related edges)
 		for(String s : v.getGraph().keySet()) {
 			if(!s.equals(address))

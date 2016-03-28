@@ -11,17 +11,20 @@ import MapKit
 import CoreLocation
 import Alamofire
 import SwiftyJSON
-import AddressBookUI
+import Contacts
 
 class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDelegate {
     
     @IBOutlet weak var mapView: MKMapView!
     
     var itinerary: [JSON]?
+    var driverName = String()
     let locationManager = CLLocationManager()
     var currentLocation = CLLocationCoordinate2D()
     var origin = CLLocationCoordinate2D()
     var destination = CLLocationCoordinate2D()
+    var itineraryAddresses: [JSON]?
+    var itineraryCoords: [JSON]?
     
     //set default region displayed on map (GWU Foggy Bottom Campus)
     func setDefaultRegion() {
@@ -42,6 +45,9 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
     //inital app setup
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //set driver
+        self.driverName = "Mr. Smith"
         
         //enable CoreLocation services
         self.locationManager.delegate = self
@@ -74,61 +80,59 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
         //paramaters that adhere to itinerary load request protocol
         let paras = [
             "DeviceType": "Driver",
-            "RequestType": "LoadItinerary"
+            "RequestType": "LoadItineraryAddresses",
+            "DriverName": self.driverName
         ]
         
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
             .response { request, response, data, error in
                 
                 let json = JSON(data: data!)
-                print(json["itinerary"])
+                print(json)
+                self.itineraryAddresses = json.array
                 
-                self.itinerary = json["itinerary"].array
-                
-                if(self.itinerary != nil)
+                if(self.itineraryAddresses != nil)
                 {
-                    self.clearMap()
-                    //for each itinerary item, save as itinerary item
-                    //pass this itinerary item to the graph and reload
-                    for var index=0; index<self.itinerary!.count-1; index++ {
-                        
-                        let longOriginAddress = String(self.itinerary![index])
-                        let longDestinationAddress = String(self.itinerary![index+1])
-
-                        CLGeocoder().geocodeAddressString(longOriginAddress) { (placemark, error) -> Void in
+                    
+                    //paramaters that adhere to itinerary load request protocol
+                    let paras = [
+                        "DeviceType": "Driver",
+                        "RequestType": "LoadItineraryCoords",
+                        "DriverName": self.driverName
+                    ]
+                    
+                    Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)
+                        .response { request, response, data, error in
                             
-                            if error != nil
-                            {
-                                print("Error: " + error!.localizedDescription, terminator: "\n")
-                                return
-                            }
+                            let json = JSON(data: data!)
+                            print(json)
                             
-                            if placemark!.count > 0
+                            self.itineraryCoords = json.array
+                            
+                            if(self.itineraryCoords != nil)
                             {
-                                let pmOrigin = placemark![0] as! CLPlacemark
                                 
-                                CLGeocoder().geocodeAddressString(longDestinationAddress) { (placemark, error) -> Void in
+                                //for each itinerary item, save as itinerary item
+                                //pass this itinerary item to the graph and reload
+                                for var index=0; index<self.itineraryCoords!.count-1; index++ {
                                     
-                                    if error != nil
-                                    {
-                                        print("Error: " + error!.localizedDescription, terminator: "\n")
-                                        return
-                                    }
+                                    let originAddress = self.itineraryAddresses![index]
+                                    var originCoords = CLLocationCoordinate2D()
                                     
-                                    if placemark!.count > 0
-                                    {
-                                        let pmDestination = placemark![0] as! CLPlacemark
-                                        self.showDirections(pmOrigin, dest: pmDestination)
-                                    }
+                                    originCoords = CLLocationCoordinate2D(latitude: Double(self.itineraryCoords![index].array![0].string!)!, longitude: Double(self.itineraryCoords![index].array![1].string!)!)
                                     
+                                    let destinationAddress = self.itineraryAddresses![index+1]
+                                    var destinationCoords = CLLocationCoordinate2D()
+                                    
+                                    destinationCoords = CLLocationCoordinate2D(latitude: Double(self.itineraryCoords![index+1].array![0].string!)!, longitude: Double(self.itineraryCoords![index+1].array![1].string!)!)
+                    
+                                    self.showDirections(originAddress.string!, origCoords: originCoords, destAddress: destinationAddress.string!, destCoords: destinationCoords)
                                 }
                             }
-                            
-                        }
                     }
                 }
         }
-        
+
     }
     
     override func didReceiveMemoryWarning() {
@@ -175,11 +179,14 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
     }
     
     //calculate route between two points, output as map overlay
-    func showDirections( orig: CLPlacemark, dest: CLPlacemark) {
+    func showDirections( origAddress: String, origCoords: CLLocationCoordinate2D, destAddress: String, destCoords: CLLocationCoordinate2D) {
+        
+        let origAddressArray = String(origAddress).componentsSeparatedByString(",")
+        let destAddressArray = String(destAddress).componentsSeparatedByString(",")
         
         let request = MKDirectionsRequest()
-        request.source = MKMapItem(placemark: MKPlacemark(coordinate: (orig.location?.coordinate)!, addressDictionary: orig.addressDictionary as! [String:AnyObject]?))
-        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: (dest.location?.coordinate)!, addressDictionary: dest.addressDictionary as! [String:AnyObject]?))
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: (origCoords), addressDictionary: [String(CNPostalAddressStreetKey): origAddressArray[0]]))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: (destCoords), addressDictionary: [String(CNPostalAddressStreetKey): destAddressArray[0]]))
         request.transportType = .Automobile
         request.requestsAlternateRoutes = false
         
@@ -206,9 +213,9 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
                     formatter.maximumFractionDigits = 2
                     
                     let destMarker = Location(
-                        title: ABCreateStringWithAddressDictionary(dest.addressDictionary!, false),
+                        title: origAddressArray[0],
                         subtitle: String(formatter.stringFromNumber(route.expectedTravelTime/60)!),
-                        coordinate: (dest.location?.coordinate)!)
+                        coordinate: origCoords)
                     
                     self.mapView.addAnnotation(destMarker)
                 }
@@ -221,14 +228,6 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
             
             mapView.addOverlay(route.polyline,
                 level: MKOverlayLevel.AboveRoads)
-        }
-    }
-    
-    //Actions
-    @IBAction func unwindToMealList(sender: UIStoryboardSegue) {
-        if let sourceViewController = sender.sourceViewController as? ItineraryController, it = sourceViewController.itinerary {
-            // Add a new meal.
-
         }
     }
     
