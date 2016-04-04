@@ -81,7 +81,9 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
         let paras = [
             "DeviceType": "Driver",
             "RequestType": "LoadItineraryAddresses",
-            "DriverName": self.driverName
+            "DriverName": self.driverName,
+            "DriverLocationLat": String(currentLocation.latitude),
+            "DriverLocationLon": String(currentLocation.longitude)
         ]
         
         Alamofire.request(.POST, "http://localhost:8080/4RideServlet/Servlet", parameters: paras)

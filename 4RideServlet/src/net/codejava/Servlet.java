@@ -209,7 +209,15 @@ public class Servlet extends HttpServlet {
         		{
 	        		String[] originCoords = request.getParameterValues("Origin")[0].split("\\s+");
 	        		String[] destinationCoords = request.getParameterValues("Destination")[0].split("\\s+");
-	        		int passengers = (int) Float.parseFloat(request.getParameterValues("Passengers")[0]);
+	        		int passengers;
+	        		
+	        		try {
+		        		passengers = (int) Float.parseFloat(request.getParameterValues("Passengers")[0]);	
+	        		}
+	        		catch(NumberFormatException e) {
+	        			out.print("Invalid passenger count");
+	        			return;
+	        		}
 	        		
 	        		//get vehicle assignment
 	        		int assignment = pickupRequestHandler(originCoords, destinationCoords, passengers);
@@ -332,18 +340,26 @@ public class Servlet extends HttpServlet {
             
             System.out.println("RequestType: " + requestType);
             
-        	if(requestType.equals("LoadItinerary")) {
-        		//send all current vehicle info to its driver
-        		System.out.println(deviceType + " request");
-        		String vAssignment = mapper.writeValueAsString(vehicles[1]);
-        		out.print(vAssignment);
-        	}
-        	else if(requestType.equals("LoadItineraryAddresses")) {
+        	if(requestType.equals("LoadItineraryAddresses")) {
         		
         		String[] loadItAddressResponse = new String[1];
-        		if(request.getParameterMap().containsKey("DriverName"))
-             		{
-             			String driverName = request.getParameterValues("DriverName")[0];
+        		if(		request.getParameterMap().containsKey("DriverName") &&
+        				request.getParameterMap().containsKey("DriverLocationLat") &&
+        				request.getParameterMap().containsKey("DriverLocationLon")
+        		  )
+             		{             			
+         				String driverName = request.getParameterValues("DriverName")[0];
+        				float driverLocationLat;
+        				float driverLocationLon;
+             			
+    	        		try {
+    	        			driverLocationLat = Float.parseFloat(request.getParameterValues("DriverLocationLat")[0]);
+    	        			driverLocationLon = Float.parseFloat(request.getParameterValues("DriverLocationLon")[0]);
+    	        		}
+    	        		catch(NumberFormatException e) {
+    	        			out.print("Get Itinerary (Addresses) failed. Invalid Vehicle Location");
+    	        			return;
+    	        		}
                  		
                 		//send all current vehicle info to its driver
                 		System.out.println(deviceType + " request");
@@ -352,7 +368,10 @@ public class Servlet extends HttpServlet {
                 		for(Vehicle v : vehicles)
                 		{
                 			if(v.getDriverName().equals(driverName))
+                			{
                 				it = v.getItinerary();
+                				//v.setLocation(new float[]{driverLocationLat, driverLocationLon});
+                			}
                 		}
                 		
                 		String vAssignment = mapper.writeValueAsString(it);
@@ -502,6 +521,7 @@ public class Servlet extends HttpServlet {
 		System.out.println(destinationAddress);
 		
 		ArrayList<Map<String, Map<String, Integer>>> updatedGraphs = new ArrayList<Map<String, Map<String, Integer>>>();
+		ArrayList<String> vehicleLocs = new ArrayList<String>();
 		
 		//for all vehicles, add origin and destination points to graph
 		//compute edge weights between all existing nodes to origin/destination node based on weighting factors
@@ -514,11 +534,27 @@ public class Servlet extends HttpServlet {
 				HashMap<String, Integer> tempMap = new HashMap<String, Integer>();
 				tempMap.putAll(v.getGraph().get(key));
 				graph.put(key, tempMap);
-			}
-			
+			}	
 			addLocation(graph, v, originAddress);
-			addLocation(graph, v, destinationAddress);
-    		
+			addLocation(graph, v, destinationAddress); 
+			
+			String vehicleLocAddress;
+			if((vehicleLocAddress = reverseGeocodeCache.get(v.getLocation())) == null) {		
+				GeocodingResult[] results5 = null;	
+				try 
+				{
+					results5 = GeocodingApi.reverseGeocode(context, new LatLng(v.getLocation()[0], v.getLocation()[1])).await();
+				} 
+				catch (Exception e) { e.printStackTrace(); }
+				vehicleLocAddress = results5[0].formattedAddress;
+				geocodeCache.put(vehicleLocAddress, new String[]{Float.toString(v.getLocation()[0]), Float.toString(v.getLocation()[1])});
+				reverseGeocodeCache.put(new String[]{Float.toString(v.getLocation()[0]), Float.toString(v.getLocation()[1])}, vehicleLocAddress);
+			}
+			System.out.println(vehicleLocAddress);
+			vehicleLocs.add(vehicleLocAddress);
+			
+			addLocation(graph, v, vehicleLocAddress); 
+
     		updatedGraphs.add(graph);	
 		}
 		
@@ -581,6 +617,9 @@ public class Servlet extends HttpServlet {
 		vehicles[vehicleAssignment].setItinerary(printOptimalTour(itinerary));
 		vehicles[vehicleAssignment].setGraph(updatedGraphs.get(vehicleAssignment));
 		
+		//remove current vehicle loc from graph
+		removeLocation(vehicles[vehicleAssignment], vehicleLocs.get(vehicleAssignment), false);
+		
 		//set node's priority for vehicle
 		int newPriority = -1;
 		Entry<String, Integer> maxPriority = null;
@@ -592,6 +631,7 @@ public class Servlet extends HttpServlet {
 		System.out.println("Priority: " + newPriority);
 		vehicles[vehicleAssignment].setPriority(originAddress, newPriority);
 		vehicles[vehicleAssignment].setPriority(destinationAddress, newPriority);
+		vehicles[vehicleAssignment].setPriority(vehicleLocs.get(vehicleAssignment), newPriority+1);
 		
 		return vehicleAssignment;
 
@@ -671,8 +711,8 @@ public class Servlet extends HttpServlet {
 		for(Vehicle v : vehicles) {
 			if(v.getDriverName().equals(driverName)) {
 				
-				removeLocation(v, originAddress);
-				removeLocation(v, destinationAddress);
+				removeLocation(v, originAddress, true);
+				removeLocation(v, destinationAddress, true);
 				
 				//add capacity back to vehicle
 				int passengers;
@@ -721,7 +761,7 @@ public class Servlet extends HttpServlet {
 			if(v.getDriverName().equals(driverName)) {
 				
 				System.out.println("THIS VEHICLE: " + v);
-				removeLocation(v, destinationAddress);
+				removeLocation(v, destinationAddress, true);
 				
 				//add capacity back to vehicle
 				int passengers;
@@ -782,7 +822,7 @@ public class Servlet extends HttpServlet {
 		for(Vehicle v : vehicles) {
 			if(v.getDriverName().equals(driverName)) {	
 				addLocation(v.getGraph(), v, newDestinationAddress);
-				removeLocation(v, oldDestinationAddress);
+				removeLocation(v, oldDestinationAddress, true);
 				destinationChangeResponse[0] = "Destination Change Successful";	
 				break;
 			}
@@ -854,7 +894,7 @@ public class Servlet extends HttpServlet {
 		}
 	}
 	
-	protected void removeLocation(Vehicle v, String a) {
+	protected void removeLocation(Vehicle v, String a, boolean recomputeIt) {
 		
 		//set address to be removed
 		String address = a;
@@ -873,14 +913,16 @@ public class Servlet extends HttpServlet {
 		}
 		v.getGraph().remove(address);
 		
-		//remove cancelled request origin/destination from itinerary
-		Map<String, Map<String, String>> it = new HashMap<String, Map<String, String>>();
-		String[] itineraryLocs = v.getGraph().keySet().toArray(new String[v.getGraph().keySet().size()]);	
-		for(int j=0; j<v.getGraph().size(); j++)
-			it.put(itineraryLocs[j], new HashMap<String, String>());
+		//recompute itinerary without origin/destination
+		if(recomputeIt) {
+			Map<String, Map<String, String>> it = new HashMap<String, Map<String, String>>();
+			String[] itineraryLocs = v.getGraph().keySet().toArray(new String[v.getGraph().keySet().size()]);	
+			for(int j=0; j<v.getGraph().size(); j++)
+				it.put(itineraryLocs[j], new HashMap<String, String>());
 		
-		optimalTour(v.getGraph().size(), v.getGraph(), it);
-		v.setItinerary(printOptimalTour(it));
+			optimalTour(v.getGraph().size(), v.getGraph(), it);
+			v.setItinerary(printOptimalTour(it));
+		}
 		
 	    //remove location's priority from vehicle object
 	    v.removePriority(address);
