@@ -11,6 +11,7 @@ public class Vehicle {
 	private int currentCapacity;
 	private String driverName;
 	private float[] location;
+	private String locationAddress;
 	private Map<String, Integer> priorities;
 	private Map<String, Map<String, Integer>> adjacencyList;
 	private String[] itinerary;
@@ -98,12 +99,20 @@ public class Vehicle {
 	}
 	
 	public boolean removePriority(String key) {
-	    if(key == null)
+	    if(key == null )
 	    	return false;
-	    else {
-	    	this.priorities.remove(key);
+	    else if(this.priorities.get(key) != null) {
+	    	int p = this.priorities.remove(key);
+	    	for(int i=0; i< this.itinerary.length; i++)
+	    	{
+	    		int existingP = this.priorities.get(this.itinerary[i]);
+	    		if(existingP > p)
+	    			this.priorities.put(this.itinerary[i], existingP-1);		
+	    	}
 	    	return true;
 	    }
+	    else
+	    	return true;
 	}
 	
 	public Map<String, Integer> getPriorities() {
@@ -129,6 +138,14 @@ public class Vehicle {
 	
 	public int getCurrentCapacity() {
 		return this.currentCapacity;
+	}
+	
+	public String getLocAddress() {
+		return this.locationAddress;
+	}
+	
+	public void setLocAddress(String loc) {
+		this.locationAddress = loc;
 	}
 	
 	public void setCurrentCapacity(int c) {

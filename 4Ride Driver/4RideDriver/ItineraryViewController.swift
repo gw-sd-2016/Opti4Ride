@@ -28,7 +28,7 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
         super.viewDidLoad()
         
         //set driver
-        self.driverName = "Mr. Smith"
+        self.driverName = "Mr. Dillard"
         
         //enable CoreLocation services
         self.locationManager.delegate = self
@@ -183,8 +183,7 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
                 "DeviceType": "Driver",
                 "RequestType": "CompletionRequest",
                 "DriverName": self.driverName,
-                "PassengerCount": String(2),
-                "Destination": String(self.itItems[indexPath.row].location.latitude) + " " + String(self.itItems[indexPath.row].location.longitude)
+                "Destination": String(self.itItems[indexPath.row].address)
             ]
             
             //issue completion request
