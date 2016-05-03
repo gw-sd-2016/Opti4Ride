@@ -1,5 +1,5 @@
 # 4Ride Mobile
-Randy Senior Design Project
+Randy Fitzmorris - Senior Design Project
 
 Deployment
 1) set up Tomcat v8 in Eclipse EE IDE (create Tomcat Eclipse server)
