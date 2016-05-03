@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<HTML>
+	<head>
+		<title>GW CS Senior Design Randy Fitzmorris</title>
+		<link rel="stylesheet" type="text/css" href="style_students.css">
+	</head>
+	<body>
+		<div id="header_div">
+			<p>
+			<a href="https://capstone.cs.gwu.edu/2016">GW CS Senior Design</a> 2016
+			</p>
+		</div>
+		<div id="outer_div">
+			<div id="middle_div">
+				<div class="subheader_div">
+					<h2>Randy Fitzmorris: 4Ride Mobile</h2>
+					<img src="images/headshot.jpg" width="150">
+				</div>
+				<div id="inside_div"> 
+					<p>
+						4Ride Mobile aims to provide a personal, reliable, and intuitive scheduling service for George Washington University's 4-RIDE transportation service. In its current implementation, the 4-RIDE scheduling service relies on a combination of outdated desktop-oriented web forms and manual vehicle assignments. Ineffective scheduling, insufficient communication between students and drivers, and an unintuitive interface plague the otherwise invaluable campus service. Due to 4-RIDE's late night operations, a lack of reliability also poses safety risks to the GW student body. 4Ride Mobile addresses these three weaknesses head on with elegant vehicle scheduling, reliable communication, and an intuitive iOS interface. Students and drivers interface with the service using iOS applications, which retrieve real-time updates from a central scheduling server. Dispatchers can also utilize a web-based module to view real-time routes, pickup and drop-off locations, and vehicle locations.
+					</p> 
+
+					<p>
+						The algorithmic challenge is primarily scheduling. The obvious starting point is the traveling salesman problem, which can be used to calculate the optimal itinerary a vehicle should follow given a set of location assignments. However, the algorithm needs to consider the ordering of locations such that pickup points precede drop-off points for a given request. It also needs to consider capacity constraints. Finally, it needs to consider the high computational cost of implementing something similar to an optimal tour. 4Ride Mobile utilizes contextual Dial-a-Ride approximations to form this algorithm. The algorithm takes location graphs as input, which are weighted by a sum of travel, traffic, and priority factors. This sum is extendible to an indefinite number of additional factors. 
+					</p>
+					<p>
+						4Ride Mobile will take the form of a student and driver iOS application interfacing with the scheduling server. Since the server handles all client requests with standard POST calls and JSON replies, these apps can be easily ported to alternative mobile platforms. A web-based module also interfaces with the server for viewing real-time driver routes. 
+					</p>
+					<p>
+						<strong>Bio:</strong>
+						Currently I am a senior pursuing a BS in Computer Science and Finance at the George Washington University. I am enthusiastic about entrepreneurship, user-facing software design, financial markets, and politics. I have spent my time at GW as a learning assistant in the Computer Science department and co-executive producer of GW Crossfire - GW's monthly poltical debate show. This summer, I will be heading to New York as a Technology Analyst on Goldman Sach's commodities trading desk. 
+					</p>
+					<p>
+						<strong>Documentation:</strong> 							
+						<ul>
+							<li><a href="docs/nsf_proposal.pdf">NSF Proposal</a></li>
+							<li><a href="docs/functional_spec.pdf">Functional Specification</a></li>
+							<li><a href="docs/design_doc.pdf">Design Document</a></li>
+							<li><a href="docs/business_proposal.pdf">Business Proposal</a></li>
+							<li><a href="docs/components_interfaces.pdf">Components and Interfaces</a></li>
+						</ul>
+					</p>
+				</div>
+			</div>
+		</div>
+	<body>
+</HTML>
