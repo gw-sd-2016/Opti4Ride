@@ -148,8 +148,16 @@ class ItineraryController: UITableViewController, CLLocationManagerDelegate {
         
         cell.nameLabel.text = itItem.shortAddress
         cell.photoImageView.image = itItem.photo
-        cell.distance.text = distanceTo(itItem.location)
         
+        //show distance and measurement unit (miles) as different font sizes
+        let distanceLine = NSMutableAttributedString(string: "\(distanceTo(itItem.location))")
+        let smallerFontSize = [NSFontAttributeName : UIFont.systemFontOfSize(20.0)]
+        let measurementLine = NSMutableAttributedString(string: " mi", attributes: smallerFontSize)
+
+        distanceLine.appendAttributedString(measurementLine)
+        cell.distance.attributedText = distanceLine
+        
+        //cell.distance.text = String(distanceTo(itItem.location)) + " mi"
         //cell.backgroundColor = UIColor.greenColor()
         
         return cell

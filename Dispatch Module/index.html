@@ -138,7 +138,7 @@
     			}, this);
   			},
   			'clearControls': function () {
-  				    				console.log(routeControls.length);
+  				console.log(routeControls.length);
     			for(var i=0; i<routeControls.length; i++) {
     				    				console.log(routeControls.length);
       				this.removeControl(routeControls[i]);
@@ -151,17 +151,6 @@
 		setInterval("loadVehicleData()", 5000);
 
 		function loadVehicleData() {
-
-			map.clearLayers();
-			map.clearControls();
-
-			tLayer = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmZpdHptb3JyaXMiLCJhIjoiY2lrMWxuaWRrMzk5dnZ0bHo0azRnZ204MyJ9.uwX0V-kXg3G6dXcs4r3v5Q', {
-				maxZoom: 18,
-				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-					'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-					'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-				id: 'mapbox.streets'
-			}).addTo(map);
 
 			markers = L.markerClusterGroup({ 	
 				spiderfyOnMaxZoom: true, 
@@ -177,10 +166,24 @@
 				},
 			});
 
+			map.clearLayers();
+
+			/*
+			tLayer = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmZpdHptb3JyaXMiLCJhIjoiY2lrMWxuaWRrMzk5dnZ0bHo0azRnZ204MyJ9.uwX0V-kXg3G6dXcs4r3v5Q', {
+				maxZoom: 18,
+				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+					'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+					'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+				id: 'mapbox.streets'
+			}).addTo(map);
+			*/
+
 			var postParams = {DeviceType: 'Dispatch', RequestType: 'LoadItineraryCoords'};
 			$.post("http://localhost:8080/4RideServlet/Servlet", postParams, function(data, textStatus) {
 				var postParams = {DeviceType: 'Dispatch', RequestType: 'LoadItineraryAddresses'};
 				$.post("http://localhost:8080/4RideServlet/Servlet", postParams, function(addressData, addressTextStatus) {
+
+					map.clearControls();
 
 					$.each( data, function( index1, val ) {
 					  	$.each( val, function( index2, val ) {

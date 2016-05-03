@@ -47,7 +47,7 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
         super.viewDidLoad()
         
         //set driver
-        self.driverName = "Mr. Smith"
+        self.driverName = "Mr. Dillard"
         
         //enable CoreLocation services
         self.locationManager.delegate = self
@@ -113,7 +113,6 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
                             
                             if(self.itineraryCoords != nil)
                             {
-                                
                                 //for each itinerary item, save as itinerary item
                                 //pass this itinerary item to the graph and reload
                                 for var index=0; index<self.itineraryCoords!.count-1; index++ {
@@ -130,6 +129,14 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
                     
                                     self.showDirections(originAddress.string!, origCoords: originCoords, destAddress: destinationAddress.string!, destCoords: destinationCoords)
                                 }
+                                
+                                //draw route from current vehicle loc to first itinerary item
+                                let destinationAddress = self.itineraryAddresses![0]
+                                var destinationCoords = CLLocationCoordinate2D()
+                                
+                                destinationCoords = CLLocationCoordinate2D(latitude: Double(self.itineraryCoords![0].array![0].string!)!, longitude: Double(self.itineraryCoords![0].array![1].string!)!)
+                                
+                                self.showDirections("Current Location", origCoords: self.currentLocation, destAddress: destinationAddress.string!, destCoords: destinationCoords)
                             }
                     }
                 }
@@ -215,9 +222,9 @@ class MapController: UIViewController, CLLocationManagerDelegate, UITextFieldDel
                     formatter.maximumFractionDigits = 2
                     
                     let destMarker = Location(
-                        title: origAddressArray[0],
+                        title: destAddressArray[0],
                         subtitle: String(formatter.stringFromNumber(route.expectedTravelTime/60)!),
-                        coordinate: origCoords)
+                        coordinate: destCoords)
                     
                     self.mapView.addAnnotation(destMarker)
                 }
