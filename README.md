@@ -1,5 +1,5 @@
-# Opti4Ride
-Randy Senior Design Project - 4Ride Mobile
+# 4Ride Mobile
+Randy Senior Design Project
 
 Deployment
 1) set up Tomcat v8 in Eclipse EE IDE (create Tomcat Eclipse server)
